@@ -10,6 +10,7 @@ namespace external_drive_lib.android
 {
     internal class android_folder : IFolder2 {
         private FolderItem fi_;
+
         public android_folder(FolderItem fi) {
             fi_ = fi;
         }

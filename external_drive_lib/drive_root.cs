@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using external_drive_lib.interfaces;
+using external_drive_lib.windows;
 using Shell32;
 
 namespace external_drive_lib
@@ -26,7 +27,11 @@ namespace external_drive_lib
             }
         }
 
-        public List<IDrive> external_drives {
+        // returns all drives, even the internal HDDs - you might need this if you want to copy a file onto an external drive
+        public IReadOnlyList<IDrive> all_drives {
+            get { return drives_; }
+        }
+        public IReadOnlyList<IDrive> external_drives {
             get { return external_drives_; }
         }
 
@@ -37,11 +42,22 @@ namespace external_drive_lib
         public void refresh() {
             List<IDrive> drives_now = new List<IDrive>();
             drives_now.AddRange(get_android_drives());
-            var external = drives_now.Where(d => d.type != drive_type._internal_hdd).ToList();
+            var external = drives_now.Where(d => d.type != drive_type.hdd).ToList();
             lock (this) {
                 drives_ = drives_now;
                 external_drives_ = external;
             }
+        }
+
+        public IDrive drive_by_id(string unique_id_or_drive) {
+            
+        }
+
+        public IFile parse_file(string path) {
+            // split into drive + path
+        }
+
+        public IFolder parse_folder(string path) {
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +98,9 @@ namespace external_drive_lib
 
         // for now, I return all drives - don't care about which is External, Removable, whatever
 
+        private List<IDrive> get_win_drives() {
+            return DriveInfo.GetDrives().Select(d => new win_drive(d) as IDrive).ToList();
+        }
         // END OF Windows
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
 

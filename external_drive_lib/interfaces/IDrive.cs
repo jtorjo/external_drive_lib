@@ -18,8 +18,10 @@ namespace external_drive_lib.interfaces
         // external hard drive
         external_hdd,
 
-        // it's the Windows HDD - this is used internally
-        _internal_hdd
+        // it's the Windows HDD 
+        hdd,
+
+        cd_rom,
     }
 
     public interface IDrive {
