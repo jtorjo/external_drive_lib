@@ -37,6 +37,8 @@ namespace external_drive_lib.android
             }
         }
 
+        public IDrive drive { get; }
+
         public long size => fi_.Size;
         public DateTime last_write_time => fi_.ModifyDate;
 

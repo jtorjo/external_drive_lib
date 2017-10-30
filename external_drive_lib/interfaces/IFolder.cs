@@ -15,14 +15,16 @@ namespace external_drive_lib.interfaces
 
         string full_path { get; }
 
-        // this is non-null only if the parent folder is null!
-        IDrive parent_drive { get; }
+        IDrive drive { get; }
 
+        // can return null if this is a folder from the drive
         IFolder parent { get; }
 
         IEnumerable<IFile> files { get; }
         IEnumerable<IFolder> child_folders { get; }
 
+        // throws if there's an error
+        void delete();
     }
 
     // this is not exposed - so that users only use IFile.copy() instead

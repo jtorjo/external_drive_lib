@@ -16,6 +16,8 @@ namespace external_drive_lib.windows
             name_ = folder_name;
 
             Debug.Assert(!parent_.EndsWith("\\") || parent_is_drive());
+            // drive len is 3
+            Debug.Assert(parent_.Length >= 3);
         }
         public string name {
             get { return name_; }
@@ -24,12 +26,13 @@ namespace external_drive_lib.windows
         public bool exists => Directory.Exists(folder_name());
 
         public string full_path => folder_name();
+        public IDrive drive => new win_drive(parent_.Substring(0,3));
 
         private bool parent_is_drive() {
             return parent_.Length <= 3;
         }
 
-        public IDrive parent_drive => parent_is_drive() ? new win_drive(parent_) : null;
+        //public IDrive parent_drive => parent_is_drive() ? new win_drive(parent_) : null;
 
         public IFolder parent {
             get {
@@ -58,7 +61,15 @@ namespace external_drive_lib.windows
             }
         }
 
+        public void delete() {
+            Directory.Delete(folder_name(), true);
+        }
+
+
         public void copy_file(IFile file) {
+            // FIXME if from Android, it's different
+            var dest_path = folder_name() + "\\" + file.name;
+            File.Copy(file.full_path, dest_path, true);
         }
     }
 }

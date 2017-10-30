@@ -35,10 +35,15 @@ namespace external_drive_lib.android
         }
 
         public string full_path { get; }
+        public IDrive drive { get; }
         public IDrive parent_drive { get; }
         public IFolder parent { get; }
         public IEnumerable<IFile> files { get; }
         public IEnumerable<IFolder> child_folders { get; }
+
+        public void delete() {
+        }
+
         public void copy_file(IFile file) {
         }
     }

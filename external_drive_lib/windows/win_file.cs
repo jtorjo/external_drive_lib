@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 
 namespace external_drive_lib.windows
@@ -16,6 +17,8 @@ namespace external_drive_lib.windows
             Debug.Assert(!path.EndsWith("\\"));
             path_ = path;
             name_ = name;
+            // drive len is 3
+            Debug.Assert(path_.Length >= 3);
         }
 
         public string name => name_;
@@ -30,13 +33,17 @@ namespace external_drive_lib.windows
         public string full_path => path_ + "\\" + name_;
 
         public bool exists => File.Exists(full_path);
+        public IDrive drive => new win_drive(path_.Substring(0,3));
 
         public long size => new FileInfo(full_path).Length;
         public DateTime last_write_time => new FileInfo(full_path).LastWriteTime;
 
         public void copy(string dest_path) {
             var dest = drive_root.inst.parse_folder(dest_path) as IFolder2;
-            dest?.copy_file(this);
+            if ( dest != null)
+                dest.copy_file(this);
+            else 
+                throw new exception("destination path does not exist: " + dest_path);
         }
 
         public void delete() {

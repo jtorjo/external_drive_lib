@@ -48,6 +48,9 @@ namespace external_drive_lib.interfaces
 
         IFile parse_file(string path);
         IFolder parse_folder(string path);
+
+        // creates the full path to the folder
+        IFolder create_folder(string folder);
     }
 
 }

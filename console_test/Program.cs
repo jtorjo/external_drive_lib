@@ -63,8 +63,26 @@ namespace console_test
             Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").folder.parent.full_path == "D:\\cool_pics\\a00\\b0");
         }
 
-        static void test_copy_and_delete_win_files() {
-            
+        // copies all files from this folder into a sub-folder we create
+        // after we do that, we delete the sub-folder
+        static void test_copy_and_delete_files(string src_path) {
+            var src = drive_root.inst.parse_folder(src_path);
+            var old_folder_count = src.child_folders.Count();
+            var child_dir = src_path + "/child1/child2/child3/";
+            var dest = src.drive.create_folder(child_dir);
+            foreach ( var child in src.files)
+                child.copy(child_dir);
+            long src_size = src.files.Sum(f => f.size);
+            long dest_size = dest.files.Sum(f => f.size);
+            Debug.Assert(src_size == dest_size);
+            Debug.Assert(src.child_folders.Count() == old_folder_count + 1);
+            foreach (var child in dest.files)
+                child.delete();
+
+            var first_child = dest.parent.parent;
+            first_child.delete();
+
+            Debug.Assert(src.child_folders.Count() == old_folder_count );
         }
 
         static void Main(string[] args)
@@ -72,6 +90,7 @@ namespace console_test
             //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
             test_win_parse_files();
             test_parent_folder();
+            test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
         }
     }
 }

@@ -15,13 +15,17 @@ namespace external_drive_lib.interfaces {
         // guaranteed to NOT THROW
         bool exists { get; }
 
+        IDrive drive { get; }
+
         long size { get; }
         DateTime last_write_time { get; }
 
         // note: dest_path can be to another external drive
         // throws if there's an error
         //
-        // note: move it implemented via copy() + delete()
+        // note: move can be implemented via copy() + delete()
+        //
+        // note: overwrites if destination exists
         void copy(string dest_path);
         // throws if there's an error
         void delete();

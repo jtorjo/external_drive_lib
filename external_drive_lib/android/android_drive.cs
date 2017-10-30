@@ -102,5 +102,10 @@ namespace external_drive_lib.android
                 throw new exception("not a folder: " + root_name + "\\" + path);
             return new android_folder(this, fi);
         }
+
+        public IFolder create_folder(string folder) {
+            // care about drive prefix - does it contain the root name/id or not?
+            return null;
+        }
     }
 }
