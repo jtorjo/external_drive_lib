@@ -58,7 +58,7 @@ namespace external_drive_lib.android
         }
 
         public string root_name {
-            get { return "{" + unique_id + "}:\\"; }
+            get { return root_path_; }
         }
         
         public IEnumerable<IFolder> folders {

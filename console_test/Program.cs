@@ -16,9 +16,9 @@ namespace console_test
             Console.WriteLine("Level " + (indent+1));
             Console.WriteLine("");
             foreach ( var f in folders)
-                Console.WriteLine(new string(' ', indent * 2) + f.full_path);
+                Console.WriteLine(new string(' ', indent * 2) + f.full_path + " " + f.name);
             foreach ( var f in files)
-                Console.WriteLine(new string(' ', indent * 2) + f.full_path + " " + f.size + " " + f.last_write_time);
+                Console.WriteLine(new string(' ', indent * 2) + f.full_path + " " + f.name + " " + f.size + " " + f.last_write_time);
         } 
 
         static void traverse_drive(IDrive d, int levels) {
@@ -31,9 +31,9 @@ namespace console_test
                 foreach (var f in folders) {
                     try {
                         child_folders.AddRange(f.child_folders);
-                    } catch {
+                    } catch(Exception e) {
                         // could be unauthorized access
-                        Console.WriteLine(new string(' ', i * 2) + f.full_path + " *** UNAUTHORIZED folders");
+                        Console.WriteLine(new string(' ', i * 2) + f.full_path + " *** UNAUTHORIZED folders " + e);
                     }
                     try {
                         child_files.AddRange(f.files);
@@ -87,11 +87,11 @@ namespace console_test
 
         static void Main(string[] args)
         {
-            traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
-            test_win_parse_files();
-            test_parent_folder();
-            test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
-            traverse_drive( drive_root.inst.get_drive("{galaxy s6}"), 3);
+            //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
+            //test_win_parse_files();
+            //test_parent_folder();
+            //test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
+            traverse_drive( drive_root.inst.get_drive("{galaxy s6}"), 4);
         }
     }
 }
