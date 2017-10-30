@@ -174,24 +174,17 @@ namespace console_test
         }
 
 
-        static void test_copy_and_delete_files(string src_path, string dest_path) {
+        static void test_copy_files(string src_path, string dest_path) {
             var src = drive_root.inst.parse_folder(src_path);
-            var old_folder_count = src.child_folders.Count();
-            var child_dir = dest_path;
-            var dest = src.drive.create_folder(child_dir);
+            var dest = drive_root.inst.new_folder(dest_path);
             foreach ( var child in src.files)
-                child.copy(child_dir);
+                child.copy(dest_path);
+
+            // ugly, but since this happens somewhat async, we need to sleep a bit before reading everything correctly (on android)
+            Thread.Sleep(2500);
             long src_size = src.files.Sum(f => f.size);
             long dest_size = dest.files.Sum(f => f.size);
             Debug.Assert(src_size == dest_size);
-            Debug.Assert(src.child_folders.Count() == old_folder_count + 1);
-            foreach (var child in dest.files)
-                child.delete();
-
-            var first_child = dest.parent.parent;
-            first_child.delete();
-
-            Debug.Assert(src.child_folders.Count() == old_folder_count );
         }
 
         static void Main(string[] args)
@@ -206,12 +199,14 @@ namespace console_test
             //android_test_parent_folder();
             //android_test_create_delete_folder();
             //android_test_copy_and_delete_file();
-            android_test_copy_full_dir_to_windows();
+            //android_test_copy_full_dir_to_windows();
             // first from android to win, then vice versa
             var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(temp_dir);
-            test_copy_and_delete_files(android_prefix + ":/phone/dcim/camera", temp_dir);
-            test_copy_and_delete_files(temp_dir, android_prefix + ":/phone/dcim/camera_copy");
+            test_copy_files(android_prefix + ":/phone/dcim/facebook", temp_dir);
+            test_copy_files(temp_dir, android_prefix + ":/phone/dcim/facebook_copy");
+            drive_root.inst.parse_folder(temp_dir).delete();
+            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/facebook_copy").delete();
 
             // test_copy_and_delete_files
         }

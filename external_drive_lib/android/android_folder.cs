@@ -14,7 +14,6 @@ namespace external_drive_lib.android
     // https://blog.dotnetframework.org/2014/12/10/read-extended-properties-of-a-file-in-c/ -> this gets properties of a folder
 
     internal class android_folder : IFolder2 {
-        private const int TEST_FOR_COPY_COMPLETE_TIMES = 5;
 
         private FolderItem fi_;
         private android_drive drive_;
@@ -107,13 +106,6 @@ namespace external_drive_lib.android
                 win_util.delete_folder_item(existing_name);
 
             (fi_.GetFolder as Folder).CopyHere(dest_item, copy_options);
-
-            #if maybe_bad_idea
-            // note: the copy happens asynchronously - we want to wait a bit until it's complete
-            existing_name = null;
-            for ( int i = 0 ; i < TEST_FOR_COPY_COMPLETE_TIMES && existing_name == null; ++i)
-                existing_name = (fi_.GetFolder as Folder).ParseName(souce_name);
-            #endif
         }
     }
 }

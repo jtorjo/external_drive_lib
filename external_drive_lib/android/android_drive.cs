@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
@@ -11,6 +12,9 @@ using Shell32;
 namespace external_drive_lib.android
 {
     internal class android_drive : IDrive {
+        private const int RETRY_TIMES = 5;
+        private const int SLEEP_BEFORE_RETRY_MS = 200;
+
         private FolderItem root_;
         private drive_type drive_type_;
 
@@ -95,7 +99,12 @@ namespace external_drive_lib.android
             var cur_folder = root_.GetFolder as Folder;
             var cur_folder_item = root_;
             foreach (var sub in sub_folder_path) {
+                // sometimes this returns null even if we have the folder - I've seen this when copying from windows to android (bulk copy)
                 var sub_folder = cur_folder.ParseName(sub);
+                for (int retry = 0; retry < RETRY_TIMES && sub_folder == null; retry++) {
+                    Thread.Sleep(SLEEP_BEFORE_RETRY_MS);
+                    sub_folder = cur_folder.ParseName(sub);
+                }
                 if (sub_folder == null)
                     return null;
                 cur_folder_item = sub_folder;
@@ -118,6 +127,11 @@ namespace external_drive_lib.android
             if (raw_folder == null)
                 throw new exception("invalid path " + path);
             var file = (raw_folder.GetFolder as Folder).ParseName(file_name);
+            // sometimes this returns null even if we have the folder - I've seen this when copying from android to windows
+            for (int retry = 0; retry < RETRY_TIMES && file == null; retry++) {
+                Thread.Sleep(SLEEP_BEFORE_RETRY_MS);
+                file = (raw_folder.GetFolder as Folder).ParseName(file_name);
+            }
             if ( file == null)
                 throw new exception("invalid path " + path);
             return new android_file(this, file as FolderItem2);
