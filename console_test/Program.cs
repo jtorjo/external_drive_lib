@@ -131,8 +131,21 @@ namespace console_test
 
 
         // what I want is to find out how fast is this, compared to Windows Explorer (roughly)
+        // 80738 millis on 452 items (1.8Gb) in Debug
+        // 77477 millis on 452 items (1.8Gb) in Release
+        //
+        // 67 secs copy from xplorer (clearly, this was a bulk copy)
         static void android_test_copy_full_dir_to_windows() {
-            Debug.Assert(false);
+            DateTime start = DateTime.Now;
+            var dest_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
+            Directory.CreateDirectory(dest_dir);
+            var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
+            foreach (var f in camera.files) {
+                Console.WriteLine(f.name);
+                f.copy(dest_dir);
+            }
+            var spent_time = (DateTime.Now - start).TotalMilliseconds;
+            Console.WriteLine("spent " + spent_time.ToString("f2") + " ms");
         }
 
         // END OF Android tests
@@ -192,7 +205,7 @@ namespace console_test
             //android_test_parse_files();
             //android_test_parent_folder();
             //android_test_create_delete_folder();
-            android_test_copy_and_delete_file();
+            //android_test_copy_and_delete_file();
             android_test_copy_full_dir_to_windows();
             // first from android to win, then vice versa
             var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
