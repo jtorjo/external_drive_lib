@@ -5,7 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using external_drive_lib.android;
 using external_drive_lib.interfaces;
+using Shell32;
 
 namespace external_drive_lib.windows
 {
@@ -32,8 +34,6 @@ namespace external_drive_lib.windows
             return parent_.Length <= 3;
         }
 
-        //public IDrive parent_drive => parent_is_drive() ? new win_drive(parent_) : null;
-
         public IFolder parent {
             get {
                 if (parent_is_drive())
@@ -44,7 +44,7 @@ namespace external_drive_lib.windows
         }
 
         private string folder_name() {
-            return parent_ + "\\" + name_;
+            return parent_ + (parent_is_drive() ? "" : "\\") + name_;
         }
 
         public IEnumerable<IFile> files {
@@ -67,9 +67,24 @@ namespace external_drive_lib.windows
 
 
         public void copy_file(IFile file) {
-            // FIXME if from Android, it's different
-            var dest_path = folder_name() + "\\" + file.name;
-            File.Copy(file.full_path, dest_path, true);
+            var copy_options = 4 | 8 | 16 | 512 | 1024 | 0x00400000;
+            var andoid = file as android_file;
+            var win = file as win_file;
+            // it can either be android or windows
+            Debug.Assert(andoid != null || win != null);
+
+            var fn = folder_name();
+            var dest_path = fn + "\\" + file.name;
+            if (win != null) 
+                File.Copy(file.full_path, dest_path, true);
+            else if (andoid != null) {
+                // Windows stupidity - if file exists, it will display a stupid "Do you want to replace" dialog,
+                // even if we speicifically told it not to (via the copy options)
+                if ( File.Exists(dest_path))
+                    File.Delete(dest_path);
+                var shell_folder = win_util.get_shell32_folder( fn) as Folder3;
+                shell_folder .CopyHere(file);
+            }
         }
     }
 }

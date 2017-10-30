@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib;
 using external_drive_lib.interfaces;
@@ -108,7 +110,15 @@ namespace console_test
         static void android_test_copy_and_delete_file() {
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             var first_file = camera.files.ToList()[0];
-            first_file.copy(camera.parent.full_path);
+            //first_file.copy(camera.parent.full_path);
+
+            //var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
+            var dir = "D:\\cool_pics" ;
+            Directory.CreateDirectory(dir);
+            first_file.copy(dir);
+            var name = first_file.name;
+            Thread.Sleep(10000);
+            Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
         }
 
         // END OF Android tests
@@ -169,7 +179,7 @@ namespace console_test
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
             //android_test_parse_files();
             //android_test_parent_folder();
-            android_test_create_delete_folder();
+            //android_test_create_delete_folder();
             android_test_copy_and_delete_file();
 
             // test_copy_and_delete_files
