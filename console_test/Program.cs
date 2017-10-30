@@ -112,12 +112,10 @@ namespace console_test
             var first_file = camera.files.ToList()[0];
             //first_file.copy(camera.parent.full_path);
 
-            //var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
-            var dir = "D:\\cool_pics" ;
+            var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(dir);
             first_file.copy(dir);
             var name = first_file.name;
-            Thread.Sleep(10000);
             Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
         }
 

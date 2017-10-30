@@ -67,7 +67,7 @@ namespace external_drive_lib.windows
 
 
         public void copy_file(IFile file) {
-            var copy_options = 4 | 8 | 16 | 512 | 1024 | 0x00400000;
+            var copy_options = 4 | 16 | 512 | 1024;
             var andoid = file as android_file;
             var win = file as win_file;
             // it can either be android or windows
@@ -82,8 +82,8 @@ namespace external_drive_lib.windows
                 // even if we speicifically told it not to (via the copy options)
                 if ( File.Exists(dest_path))
                     File.Delete(dest_path);
-                var shell_folder = win_util.get_shell32_folder( fn) as Folder3;
-                shell_folder .CopyHere(file);
+                var shell_folder = win_util.get_shell32_folder( fn) ;
+                shell_folder .CopyHere(andoid.folder_item(), copy_options);
             }
         }
     }
