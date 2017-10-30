@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,30 +90,50 @@ namespace external_drive_lib.android
             get { return friendly_name_; }
         }
 
+        private FolderItem parse_sub_folder(IEnumerable<string> sub_folder_path) {
+            var cur_folder = root_.GetFolder as Folder;
+            var cur_folder_item = root_;
+            foreach (var sub in sub_folder_path) {
+                var sub_folder = cur_folder.ParseName(sub);
+                if (sub_folder == null)
+                    return null;
+                cur_folder_item = sub_folder;
+                cur_folder = cur_folder_item.GetFolder as Folder;
+            }
+            return cur_folder_item;
+        }
+
         public IFile parse_file(string path) {
             var unique_drive_id = "{" + unique_id + "}";
-            if (path.StartsWith(unique_drive_id))
-                path = path.Replace(unique_drive_id, root_path_);
-            else
-                path = root_ + "\\" + path;
+            if (path.StartsWith(unique_drive_id, StringComparison.CurrentCultureIgnoreCase))
+                path = path.Substring(unique_drive_id.Length + 2); // ignore ":\" as well
+            if (path.StartsWith(root_path_, StringComparison.CurrentCultureIgnoreCase))
+                path = path.Substring(root_path_.Length + 1);
 
-            var fi = (root_.GetFolder as Folder).ParseName( path.Replace("/", "\\") );
-            if ( fi.IsFolder)
-                throw new exception("not a file: " + root_name + "\\" + path);
-            return new android_file(this, fi as FolderItem2);
+            var sub_folder_names = path.Replace("/", "\\").Split('\\').ToList();
+            var file_name = sub_folder_names.Last();
+            sub_folder_names.RemoveAt(sub_folder_names.Count - 1);
+            var raw_folder = parse_sub_folder(sub_folder_names);
+            if (raw_folder == null)
+                throw new exception("invalid path " + path);
+            var file = (raw_folder.GetFolder as Folder).ParseName(file_name);
+            if ( file == null)
+                throw new exception("invalid path " + path);
+            return new android_file(this, file as FolderItem2);
         }
 
         public IFolder parse_folder(string path) {
             var unique_drive_id = "{" + unique_id + "}";
-            if (path.StartsWith(unique_drive_id))
-                path = path.Replace(unique_drive_id, root_path_);
-            else
-                path = root_ + "\\" + path;
+            if (path.StartsWith(unique_drive_id, StringComparison.CurrentCultureIgnoreCase))
+                path = path.Substring(unique_drive_id.Length + 2); // ignore ":\" as well
+            if (path.StartsWith(root_path_, StringComparison.CurrentCultureIgnoreCase))
+                path = path.Substring(root_path_.Length + 1);
 
-            var fi = (root_.GetFolder as Folder).ParseName( path.Replace("/", "\\") );
-            if ( !fi.IsFolder)
-                throw new exception("not a folder: " + root_name + "\\" + path);
-            return new android_folder(this, fi);
+            var sub_folder_names = path.Replace("/", "\\").Split('\\').ToList();
+            var raw_folder = parse_sub_folder(sub_folder_names);
+            if (raw_folder == null)
+                throw new exception("invalid path " + path);
+            return new android_folder(this, raw_folder);
         }
 
         public IFolder create_folder(string folder) {

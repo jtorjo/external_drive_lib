@@ -65,6 +65,8 @@ namespace external_drive_lib
         }
 
         public IDrive try_get_drive(string unique_id_or_drive_id) {
+            if (unique_id_or_drive_id.EndsWith(":\\"))
+                unique_id_or_drive_id = unique_id_or_drive_id.Substring(0, unique_id_or_drive_id.Length - 2);
             // case insensitive
             foreach ( var d in all_drives)
                 if (string.Compare(d.root_name, unique_id_or_drive_id, StringComparison.CurrentCultureIgnoreCase) == 0 ||

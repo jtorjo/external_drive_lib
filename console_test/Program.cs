@@ -63,6 +63,24 @@ namespace console_test
             Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").folder.parent.full_path == "D:\\cool_pics\\a00\\b0");
         }
 
+
+        ///////////////////////////////////////////////////////////////////
+        // Android tests
+
+        const string android_prefix = "{galaxy s6}";
+
+        static void android_test_parse_files() {
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121557.jPg").size == 4598747);
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121601.jPg").size == 3578988);
+            Debug.Assert(drive_root.inst.parse_folder(android_prefix + ":\\phone/dcim/camera") != null);
+
+            // full_path as well
+            Debug.Assert(false);
+        }
+
+        // END OF Android tests
+        ///////////////////////////////////////////////////////////////////
+
         // copies all files from this folder into a sub-folder we create
         // after we do that, we delete the sub-folder
         static void test_copy_and_delete_files(string src_path) {
@@ -91,7 +109,9 @@ namespace console_test
             //test_win_parse_files();
             //test_parent_folder();
             //test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
-            traverse_drive( drive_root.inst.get_drive("{galaxy s6}"), 4);
+            
+            //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
+            android_test_parse_files();
         }
     }
 }
