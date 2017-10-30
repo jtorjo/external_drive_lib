@@ -6,9 +6,17 @@ using System.Threading.Tasks;
 
 namespace external_drive_lib.interfaces {
     public interface IFile {
+        // guaranteed to NOT THROW
         string name { get; }
+
         IFolder folder { get; }
         string full_path { get; }
+
+        // guaranteed to NOT THROW
+        bool exists { get; }
+
+        long size { get; }
+        DateTime last_write_time { get; }
 
         // note: dest_path can be to another external drive
         // throws if there's an error

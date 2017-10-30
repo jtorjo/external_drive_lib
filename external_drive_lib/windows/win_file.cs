@@ -18,9 +18,7 @@ namespace external_drive_lib.windows
             name_ = name;
         }
 
-        public string name {
-            get { return name_; }
-        }
+        public string name => name_;
 
         public IFolder folder {
             get {
@@ -29,9 +27,12 @@ namespace external_drive_lib.windows
             }
         }
 
-        public string full_path {
-            get { return path_ + "\\" + name_; }
-        }
+        public string full_path => path_ + "\\" + name_;
+
+        public bool exists => File.Exists(full_path);
+
+        public long size => new FileInfo(full_path).Length;
+        public DateTime last_write_time => new FileInfo(full_path).LastWriteTime;
 
         public void copy(string dest_path) {
             var dest = drive_root.inst.parse_folder(dest_path) as IFolder2;

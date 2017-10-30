@@ -48,5 +48,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\external_drive_lib\external_drive_lib.csproj">
+      <Project>{d01e0de0-2a44-42c6-a2d6-fbbb7f711bd2}</Project>
+      <Name>external_drive_lib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

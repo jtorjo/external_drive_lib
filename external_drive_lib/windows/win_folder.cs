@@ -12,21 +12,24 @@ namespace external_drive_lib.windows
     class win_folder : IFolder2 {
         private string parent_, name_;
         public win_folder(string parent_folder, string folder_name) {
-            Debug.Assert(!parent_folder.EndsWith("\\"));
             parent_ = parent_folder;
             name_ = folder_name;
+
+            Debug.Assert(!parent_.EndsWith("\\") || parent_is_drive());
         }
         public string name {
             get { return name_; }
         }
 
+        public bool exists => Directory.Exists(folder_name());
+
+        public string full_path => folder_name();
+
         private bool parent_is_drive() {
             return parent_.Length <= 3;
         }
 
-        public IDrive parent_drive {
-            get { return parent_is_drive() ? new win_drive(parent_) : null; }
-        }
+        public IDrive parent_drive => parent_is_drive() ? new win_drive(parent_) : null;
 
         public IFolder parent {
             get {

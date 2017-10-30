@@ -48,8 +48,9 @@
     <Compile Include="android\android_drive.cs" />
     <Compile Include="android\android_file.cs" />
     <Compile Include="android\android_folder.cs" />
-    <Compile Include="android\util.cs" />
+    <Compile Include="android\android_util.cs" />
     <Compile Include="drive_root.cs" />
+    <Compile Include="exceptions\exception.cs" />
     <Compile Include="interfaces\IDrive.cs" />
     <Compile Include="interfaces\IFile.cs" />
     <Compile Include="interfaces\IFolder.cs" />

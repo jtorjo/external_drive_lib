@@ -40,12 +40,6 @@ namespace external_drive_lib.interfaces
         // a friendly name for the drive
         string friendly_name { get; }
 
-        // this is a friendly name for the drive, with a bit more info, in order to uniquely identify it
-        // this is more specific than friendly_name ONLY IF POSSIBLE
-        //
-        // Example: the friendly name can be "Samsung S6", while the full friendly name can be "Samsunt S6 232899932"
-        string full_friendly_name { get; }
-
         IEnumerable<IFolder> folders { get; }
         IEnumerable<IFile> files { get; }
 

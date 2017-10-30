@@ -7,7 +7,13 @@ using System.Threading.Tasks;
 namespace external_drive_lib.interfaces
 {
     public interface IFolder {
+        // guaranteed to NOT THROW
         string name { get; }
+
+        // guaranteed to NOT THROW
+        bool exists { get; }
+
+        string full_path { get; }
 
         // this is non-null only if the parent folder is null!
         IDrive parent_drive { get; }

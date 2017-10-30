@@ -12,7 +12,7 @@ namespace external_drive_lib.android
     {
         private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public static void enumerate_children(FolderItem fi, List<IFolder> folders, List<IFile> files) {
+        public static void enumerate_children(android_drive drive, FolderItem fi, List<IFolder> folders, List<IFile> files) {
             folders.Clear();
             files.Clear();
 
@@ -21,9 +21,9 @@ namespace external_drive_lib.android
                     if (child.IsLink) 
                         logger.Fatal("android shortcut " + child.Name);                    
                     else if (child.IsFolder) 
-                        folders.Add(new android_folder(child));
+                        folders.Add(new android_folder(drive, child));
                     else 
-                        files.Add(new android_file(child));
+                        files.Add(new android_file(drive, child));
         }
     }
 }

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 
 namespace external_drive_lib.windows
@@ -46,23 +47,29 @@ namespace external_drive_lib.windows
             get { return root_; }
         }
 
-        public string full_friendly_name {
-            get { return root_; }
-        }
-
         public IEnumerable<IFolder> folders {
-            get { return new DirectoryInfo(root_).EnumerateDirectories().Select(f => new win_folder(f.FullName)); }
+            get { return new DirectoryInfo(root_).EnumerateDirectories().Select(f => new win_folder(root_, f.Name)); }
         }
         public IEnumerable<IFile> files {
             get { return new DirectoryInfo(root_).EnumerateFiles().Select(f => new win_file(root_, f.Name)); }
         }
 
         public IFile parse_file(string path) {
-            return null;
+            var full = root_ + path;
+            if (File.Exists(full)) {
+                var fi = new FileInfo(full);
+                return new win_file(fi.DirectoryName, fi.Name);
+            }
+            throw new exception("not an existing file " + full);
         }
 
         public IFolder parse_folder(string path) {
-            return null;
+            var full = root_ + path;
+            if (Directory.Exists(full)) {
+                var fi = new DirectoryInfo(full);
+                return new win_folder(fi.Parent.Name, fi.Name);
+            }
+            throw new exception("not an existing folder " + full);
         }
     }
 }
