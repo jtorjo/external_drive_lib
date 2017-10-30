@@ -110,13 +110,29 @@ namespace console_test
         static void android_test_copy_and_delete_file() {
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             var first_file = camera.files.ToList()[0];
-            //first_file.copy(camera.parent.full_path);
+            first_file.copy(camera.parent.full_path);
 
+            // copy : android to windows
             var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(dir);
             first_file.copy(dir);
             var name = first_file.name;
             Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
+
+            // copy: windows to android
+            var renamed = dir + "\\" + name + ".renamed.jpg";
+            File.Move(dir + "\\" + name, renamed);
+            drive_root.inst.parse_file(renamed).copy(android_prefix + ":/phone/dcim/");
+            // FIXME clearly, this is not ideal, but apparently, the copy is somehow asynchronnously, and it takes a short while
+            //       for the folder to realize about the new copied file - not sure what to do at this time
+            Thread.Sleep(2500);
+            Debug.Assert(first_file.size == drive_root.inst.parse_file(android_prefix + ":/phone/dcim/" + name + ".renamed.jpg").size);
+        }
+
+
+        // what I want is to find out how fast is this, compared to Windows Explorer (roughly)
+        static void android_test_copy_full_dir_to_windows() {
+            Debug.Assert(false);
         }
 
         // END OF Android tests
@@ -124,8 +140,6 @@ namespace console_test
 
         // copies all files from this folder into a sub-folder we create
         // after we do that, we delete the sub-folder
-        //
-        // v0.7+ if dest_path is present, copies there
         static void test_copy_and_delete_files(string src_path) {
             var src = drive_root.inst.parse_folder(src_path);
             var old_folder_count = src.child_folders.Count();
@@ -179,6 +193,12 @@ namespace console_test
             //android_test_parent_folder();
             //android_test_create_delete_folder();
             android_test_copy_and_delete_file();
+            android_test_copy_full_dir_to_windows();
+            // first from android to win, then vice versa
+            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
+            Directory.CreateDirectory(temp_dir);
+            test_copy_and_delete_files(android_prefix + ":/phone/dcim/camera", temp_dir);
+            test_copy_and_delete_files(temp_dir, android_prefix + ":/phone/dcim/camera_copy");
 
             // test_copy_and_delete_files
         }

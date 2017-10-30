@@ -124,13 +124,16 @@ namespace external_drive_lib.android
         }
 
         public IFolder parse_folder(string path) {
+            path = path.Replace("/", "\\");
+            if (path.EndsWith("\\"))
+                path = path.Substring(0, path.Length - 1);
             var unique_drive_id = "{" + unique_id + "}";
             if (path.StartsWith(unique_drive_id, StringComparison.CurrentCultureIgnoreCase))
                 path = path.Substring(unique_drive_id.Length + 2); // ignore ":\" as well
             if (path.StartsWith(root_path_, StringComparison.CurrentCultureIgnoreCase))
                 path = path.Substring(root_path_.Length + 1);
 
-            var sub_folder_names = path.Replace("/", "\\").Split('\\').ToList();
+            var sub_folder_names = path.Split('\\').ToList();
             var raw_folder = parse_sub_folder(sub_folder_names);
             if (raw_folder == null)
                 throw new exception("invalid path " + path);
