@@ -111,6 +111,12 @@ namespace external_drive_lib
             return drive.parse_folder(folder_or_file);
         }
 
+        // creates all folders up to the given path
+        public IFolder new_folder(string path) {
+            // FIXME
+            throw new exception("not implemented yet");
+        }
+
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Android
 
