@@ -99,7 +99,7 @@ namespace external_drive_lib.android
             var fi = (root_.GetFolder as Folder).ParseName( path.Replace("/", "\\") );
             if ( fi.IsFolder)
                 throw new exception("not a file: " + root_name + "\\" + path);
-            return new android_file(this, fi);
+            return new android_file(this, fi as FolderItem2);
         }
 
         public IFolder parse_folder(string path) {

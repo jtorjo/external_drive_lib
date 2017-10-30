@@ -23,7 +23,7 @@ namespace external_drive_lib.android
                     else if (child.IsFolder) 
                         folders.Add(new android_folder(drive, child));
                     else 
-                        files.Add(new android_file(drive, child));
+                        files.Add(new android_file(drive, child as FolderItem2));
         }
     }
 }
