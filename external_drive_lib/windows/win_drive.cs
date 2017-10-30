@@ -67,7 +67,7 @@ namespace external_drive_lib.windows
             var full = root_ + path;
             if (Directory.Exists(full)) {
                 var fi = new DirectoryInfo(full);
-                return new win_folder(fi.Parent.Name, fi.Name);
+                return new win_folder(fi.Parent.FullName, fi.Name);
             }
             throw new exception("not an existing folder " + full);
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -46,9 +47,18 @@ namespace console_test
             }
         }
 
+        // these are files from my drive
+        static void test_files() {
+            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").size == 4532595);
+            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_104952.jPg").size == 7389360);
+            Debug.Assert(drive_root.inst.parse_folder("D:\\cool_pics\\a10").files.Count() == 25);
+            Debug.Assert(drive_root.inst.parse_folder("D:\\cool_pics").child_folders.Count() == 8);
+        }
+
         static void Main(string[] args)
         {
-            traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
+            //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
+            test_files();
         }
     }
 }
