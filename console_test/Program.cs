@@ -74,8 +74,23 @@ namespace console_test
             Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121601.jPg").size == 3578988);
             Debug.Assert(drive_root.inst.parse_folder(android_prefix + ":\\phone/dcim/camera") != null);
 
-            // full_path as well
-            Debug.Assert(false);
+            Debug.Assert(drive_root.inst.parse_folder(android_prefix + ":\\phone/dcim/camera").full_path.ToLower() == android_prefix + ":\\phone\\dcim\\camera");
+
+            // ... uses file.parent
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121557.jPg").folder.full_path.ToLower() 
+                         == android_prefix + ":\\phone\\dcim\\camera");
+            // ... uses file.parent and folder.parent
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121557.jPg").folder.parent.full_path.ToLower() 
+                         == android_prefix + ":\\phone\\dcim");
+
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121557.jPg").full_path.ToLower() 
+                == android_prefix + ":\\phone\\dcim\\camera\\20171005_121557.jpg");
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121601.jPg").full_path.ToLower() 
+                         == android_prefix + ":\\phone\\dcim\\camera\\20171005_121601.jpg");
+        }
+
+        static void android_test_parent_folder() {
+            
         }
 
         // END OF Android tests
@@ -112,6 +127,8 @@ namespace console_test
             
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
             android_test_parse_files();
+
+            // test_copy_and_delete_files
         }
     }
 }

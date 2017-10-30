@@ -45,6 +45,7 @@ namespace external_drive_lib.android
             }
         }
 
+        // FIXME test!
         public bool is_connected() {
             try {
                 var items = (root_.GetFolder as Folder).Items();
@@ -134,6 +135,27 @@ namespace external_drive_lib.android
             if (raw_folder == null)
                 throw new exception("invalid path " + path);
             return new android_folder(this, raw_folder);
+        }
+
+        public string parse_android_path(FolderItem fi) {
+            var path = fi.Path;
+            if (path.EndsWith("\\"))
+                path = path.Substring(path.Length - 1);
+            Debug.Assert(path.StartsWith(root_name, StringComparison.CurrentCultureIgnoreCase));
+            // ignore the drive + "\\"
+            path = path.Substring(root_name.Length + 1);
+            var sub_folder_count = path.Count(c => c == '\\') + 1;
+            var cur = fi;
+            var name = "";
+            for (int i = 0; i < sub_folder_count; ++i) {
+                if (name != "")
+                    name = "\\" + name;
+                name = cur.Name + name;
+                cur = (cur.Parent as Folder2).Self;
+            }
+
+            name = "{" + unique_id + "}:\\" + name;
+            return name;
         }
 
         public IFolder create_folder(string folder) {

@@ -18,53 +18,13 @@ namespace external_drive_lib.android
             fi_ = fi;
             Debug.Assert(!fi.IsFolder);
 
-            #if DEBUG
-            //dump_info();
-            #endif
         }
 
         public string name => fi_.Name;
 
-        public IFolder folder {
-            get {
-                // or fi_.parsename
-                var parent = fi_.Parent as FolderItem;
-                return new android_folder(drive_, parent);
-            }
-        }
+        public IFolder folder => new android_folder(drive_, (fi_.Parent as Folder2).Self);
 
-        // for testing
-        public void dump_info() {
-            Console.WriteLine("" + size + " " + last_write_time);
-
-            var parent = fi_.Parent as Folder;
-            var headers = new List<string>();
-            for (short i = 0; i < short.MaxValue; ++i) {
-                var header = parent.GetDetailsOf(null, i);
-                if (!string.IsNullOrEmpty(header))
-                    headers.Add(header);
-                else
-                    break;
-            }
-
-            for (int i = 0; i < headers.Count; ++i) {
-                var info = parent.GetDetailsOf(fi_, i);
-                Console.WriteLine("details " + headers[i] + " = " + info);
-            }
-            var sz = fi_.ExtendedProperty("created");
-            Console.WriteLine(sz);
-        }
-
-        // need to replace the drive's root id? TOTHINK (when getting full path)
-        public string full_path {             
-            get {
-                var full = fi_.Path;
-                Debug.Assert(full.StartsWith(drive_.root_name));
-                var id = "{" + drive_.unique_id + "}";
-                full = full.Replace(drive_.root_name, id);
-                return full;
-            }
-        }
+        public string full_path => drive_.parse_android_path(fi_);
 
         // FIXME to test
         public bool exists {
