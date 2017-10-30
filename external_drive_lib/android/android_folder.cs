@@ -74,25 +74,37 @@ namespace external_drive_lib.android
 
 
         public void delete() {
-            try {
-                var temp = win_util.temporary_root_dir();
-                var temp_folder = win_util.get_shell32_folder(temp);
-                var folder_name = name;
-                temp_folder.MoveHere(fi_);
-                Directory.Delete(temp + "\\" + name, true);
-            } catch {
-                // backup - this will prompt a confirmation dialog
-                // googled it quite a bit - there's no way to disable it
-                fi_.InvokeVerb("delete");
-            }
+            win_util.delete_folder_item(fi_);
         }
 
         public void copy_file(IFile file) {
+            var copy_options = 4 | 8 | 16 | 512 | 1024 | 0x00400000;
             var andoid = file as android_file;
             var win = file as win_file;
             // it can either be android or windows
             Debug.Assert(andoid != null || win != null);
+            FolderItem dest_item = null;
+            var souce_name = file.name;
+            if (andoid != null) 
+                dest_item = andoid.folder_item();
+            else if (win != null) {
+                var win_file_name = new FileInfo(win.full_path);
 
+                var shell_folder = win_util.get_shell32_folder(win_file_name.DirectoryName);
+                var shell_file = shell_folder.ParseName(win_file_name.Name);
+                Debug.Assert(shell_file != null);
+                dest_item = shell_file;
+            }
+
+            // Windows stupidity - if file exists, it will display a stupid "Do you want to replace" dialog,
+            // even if we speicifically told it not to (via the copy options)
+            //
+            // so, if file exists, delete it first
+            var existing_name = (fi_.GetFolder as Folder).ParseName(souce_name);
+            if ( existing_name != null)
+                win_util.delete_folder_item(existing_name);
+
+            (fi_.GetFolder as Folder).CopyHere(dest_item, copy_options);
         }
     }
 }

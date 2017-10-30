@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
+using external_drive_lib.windows;
 using Shell32;
 
 namespace external_drive_lib.android
@@ -18,7 +20,11 @@ namespace external_drive_lib.android
             drive_ = drive;
             fi_ = fi;
             Debug.Assert(!fi.IsFolder);
+        }
 
+        // for android_folder.copy
+        internal FolderItem2 folder_item() {
+            return fi_;
         }
 
         public string name => fi_.Name;
@@ -99,7 +105,7 @@ namespace external_drive_lib.android
 
         
         public void delete() {
-            // https://stackoverflow.com/questions/22693693/delete-a-folderitem
+            win_util.delete_folder_item(fi_);
         }
     }
 }

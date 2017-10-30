@@ -105,6 +105,12 @@ namespace console_test
             }            
         }
 
+        static void android_test_copy_and_delete_file() {
+            var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
+            var first_file = camera.files.ToList()[0];
+            first_file.copy(camera.parent.full_path);
+        }
+
         // END OF Android tests
         ///////////////////////////////////////////////////////////////////
 
@@ -161,9 +167,10 @@ namespace console_test
             //test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
             
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
-            android_test_parse_files();
-            android_test_parent_folder();
+            //android_test_parse_files();
+            //android_test_parent_folder();
             android_test_create_delete_folder();
+            android_test_copy_and_delete_file();
 
             // test_copy_and_delete_files
         }
