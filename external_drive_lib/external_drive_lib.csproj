@@ -60,6 +60,7 @@
     <Compile Include="windows\win_drive.cs" />
     <Compile Include="windows\win_file.cs" />
     <Compile Include="windows\win_folder.cs" />
+    <Compile Include="windows\win_util.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Shell32">

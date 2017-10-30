@@ -76,6 +76,9 @@ namespace console_test
 
             Debug.Assert(drive_root.inst.parse_folder(android_prefix + ":\\phone/dcim/camera").full_path.ToLower() == android_prefix + ":\\phone\\dcim\\camera");
 
+        }
+
+        static void android_test_parent_folder() {
             // ... uses file.parent
             Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121557.jPg").folder.full_path.ToLower() 
                          == android_prefix + ":\\phone\\dcim\\camera");
@@ -84,13 +87,22 @@ namespace console_test
                          == android_prefix + ":\\phone\\dcim");
 
             Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121557.jPg").full_path.ToLower() 
-                == android_prefix + ":\\phone\\dcim\\camera\\20171005_121557.jpg");
+                         == android_prefix + ":\\phone\\dcim\\camera\\20171005_121557.jpg");
             Debug.Assert(drive_root.inst.parse_file(android_prefix + ":\\phone/dcim/camera/20171005_121601.jPg").full_path.ToLower() 
-                         == android_prefix + ":\\phone\\dcim\\camera\\20171005_121601.jpg");
+                         == android_prefix + ":\\phone\\dcim\\camera\\20171005_121601.jpg");            
+
         }
 
-        static void android_test_parent_folder() {
-            
+        static void android_test_create_delete_folder() {
+            Debug.Assert(drive_root.inst.new_folder(android_prefix + ":/phone/dcim/testing123") != null);
+            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123").delete();
+            try {
+                drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123");
+                Debug.Assert(false);
+
+            } catch {
+                // ok - the folder should not exist anymore
+            }            
         }
 
         // END OF Android tests
@@ -98,10 +110,33 @@ namespace console_test
 
         // copies all files from this folder into a sub-folder we create
         // after we do that, we delete the sub-folder
+        //
+        // v0.7+ if dest_path is present, copies there
         static void test_copy_and_delete_files(string src_path) {
             var src = drive_root.inst.parse_folder(src_path);
             var old_folder_count = src.child_folders.Count();
             var child_dir = src_path + "/child1/child2/child3/";
+            var dest = src.drive.create_folder(child_dir);
+            foreach ( var child in src.files)
+                child.copy(child_dir);
+            long src_size = src.files.Sum(f => f.size);
+            long dest_size = dest.files.Sum(f => f.size);
+            Debug.Assert(src_size == dest_size);
+            Debug.Assert(src.child_folders.Count() == old_folder_count + 1);
+            foreach (var child in dest.files)
+                child.delete();
+
+            var first_child = dest.parent.parent;
+            first_child.delete();
+
+            Debug.Assert(src.child_folders.Count() == old_folder_count );
+        }
+
+
+        static void test_copy_and_delete_files(string src_path, string dest_path) {
+            var src = drive_root.inst.parse_folder(src_path);
+            var old_folder_count = src.child_folders.Count();
+            var child_dir = dest_path;
             var dest = src.drive.create_folder(child_dir);
             foreach ( var child in src.files)
                 child.copy(child_dir);
@@ -127,6 +162,8 @@ namespace console_test
             
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
             android_test_parse_files();
+            android_test_parent_folder();
+            android_test_create_delete_folder();
 
             // test_copy_and_delete_files
         }

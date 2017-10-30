@@ -25,5 +25,13 @@ namespace external_drive_lib.android
                     else 
                         files.Add(new android_file(drive, child as FolderItem2));
         }
+
+        // for testing
+        public static List<string> get_verbs(FolderItem fi) {
+            var list = new List<string>();
+            foreach ( FolderItemVerb verb in fi.Verbs())
+                list.Add(verb.Name);
+            return list;
+        }
     }
 }

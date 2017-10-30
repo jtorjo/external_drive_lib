@@ -84,6 +84,7 @@ namespace external_drive_lib
         }
 
         private void split_into_drive_and_folder_path(string path, out string drive, out string folder_or_file) {
+            path = path.Replace("/", "\\");
             var end_of_drive = path.IndexOf(":\\");
             if (end_of_drive >= 0) {
                 drive = path.Substring(0, end_of_drive + 2);
@@ -115,23 +116,19 @@ namespace external_drive_lib
 
         // creates all folders up to the given path
         public IFolder new_folder(string path) {
-            // FIXME
-            throw new exception("not implemented yet");
+            string drive_str, folder_or_file;
+            split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
+            if ( drive_str == null)
+                throw new exception("invalid path " + path);
+            var drive = get_drive(drive_str);
+            return drive.create_folder(folder_or_file);
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Android
 
-        private static Folder get_shell32_folder(object folder_path)
-        {
-            Type shellAppType = Type.GetTypeFromProgID("Shell.Application");
-            Object shell = Activator.CreateInstance(shellAppType);
-            return (Folder)shellAppType.InvokeMember("NameSpace",
-                    System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { folder_path });
-        }
-
         private static Folder get_my_computer() {
-            return get_shell32_folder(0x11);
+            return win_util.get_shell32_folder(0x11);
         }
 
         private static List<FolderItem> get_android_connected_device_drives() {

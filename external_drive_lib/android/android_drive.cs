@@ -158,9 +158,34 @@ namespace external_drive_lib.android
             return name;
         }
 
-        public IFolder create_folder(string folder) {
-            // FIXME care about drive prefix - does it contain the root name/id or not?
-            return null;
+        // if folder already exists, it returns it
+        public IFolder create_folder(string path) {
+            path = path.Replace("/", "\\");
+            if (path.EndsWith("\\"))
+                path = path.Substring(0, path.Length - 1);
+            var id = "{" + unique_id + "}:\\";
+            var contains_drive_prefix = path.StartsWith(id, StringComparison.CurrentCultureIgnoreCase);
+            if (contains_drive_prefix)
+                path = path.Substring(id.Length);
+
+            var cur = root_;
+            var sub_folders = path.Split('\\');
+            foreach (var sub_name in sub_folders) {
+                var folder_object = cur.GetFolder as Folder;
+                var sub = folder_object.ParseName(sub_name);
+                if (sub == null) {
+                    folder_object.NewFolder(sub_name);
+                    sub = folder_object.ParseName(sub_name);
+                }
+                if ( sub == null)
+                    throw new exception("could not create part of path " + path);
+
+                if ( !sub.IsFolder)
+                    throw new exception("part of path is a file: " + path);
+                cur = sub;
+            }
+
+            return new android_folder(this, cur);
         }
     }
 }

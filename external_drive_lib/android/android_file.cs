@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using Shell32;
 
@@ -89,6 +90,11 @@ namespace external_drive_lib.android
         }
 
         public void copy(string dest_path) {
+            var dest = drive_root.inst.parse_folder(dest_path) as IFolder2;
+            if ( dest != null)
+                dest.copy_file(this);
+            else 
+                throw new exception("destination path does not exist: " + dest_path);
         }
 
         

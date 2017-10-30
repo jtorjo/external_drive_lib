@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using external_drive_lib.interfaces;
+using external_drive_lib.windows;
 using Shell32;
 
 namespace external_drive_lib.android
@@ -70,10 +72,27 @@ namespace external_drive_lib.android
             }
         }
 
+
         public void delete() {
+            try {
+                var temp = win_util.temporary_root_dir();
+                var temp_folder = win_util.get_shell32_folder(temp);
+                var folder_name = name;
+                temp_folder.MoveHere(fi_);
+                Directory.Delete(temp + "\\" + name, true);
+            } catch {
+                // backup - this will prompt a confirmation dialog
+                // googled it quite a bit - there's no way to disable it
+                fi_.InvokeVerb("delete");
+            }
         }
 
         public void copy_file(IFile file) {
+            var andoid = file as android_file;
+            var win = file as win_file;
+            // it can either be android or windows
+            Debug.Assert(andoid != null || win != null);
+
         }
     }
 }
