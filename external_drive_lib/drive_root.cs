@@ -68,7 +68,7 @@ namespace external_drive_lib
             // case insensitive
             foreach ( var d in all_drives)
                 if (string.Compare(d.root_name, unique_id_or_drive_id, StringComparison.CurrentCultureIgnoreCase) == 0 ||
-                    string.Compare(d.unique_id, unique_id_or_drive_id, StringComparison.CurrentCultureIgnoreCase) == 0)
+                    string.Compare("{" + d.unique_id + "}", unique_id_or_drive_id, StringComparison.CurrentCultureIgnoreCase) == 0)
                     return d;
             return null;
         }
@@ -136,7 +136,8 @@ namespace external_drive_lib
             var usb_drives = new List<FolderItem>();
 
             foreach (FolderItem fi in get_my_computer().Items()) {
-                if (Directory.Exists(fi.Path) || fi.Path.Contains(":\\"))
+                var path = fi.Path;
+                if (Directory.Exists(path) || path.Contains(":\\"))
                     continue;
                 usb_drives.Add(fi);
             }

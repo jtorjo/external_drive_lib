@@ -34,10 +34,20 @@ namespace external_drive_lib.android
             }
         }
 
-        public string full_path { get; }
-        public IDrive drive { get; }
-        public IDrive parent_drive { get; }
-        public IFolder parent { get; }
+        public string full_path {
+            get {
+                var full = fi_.Path;
+                Debug.Assert(full.StartsWith(drive_.root_name));
+                var id = "{" + drive_.unique_id + "}";
+                full = full.Replace(drive_.root_name, id);
+                return full;
+            }
+        }
+        public IDrive drive {
+            get { return drive_; }
+        }
+
+        public IFolder parent => new android_folder(drive_, fi_.Parent);
         public IEnumerable<IFile> files { get; }
         public IEnumerable<IFolder> child_folders { get; }
 

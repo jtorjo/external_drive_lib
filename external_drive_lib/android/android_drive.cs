@@ -58,7 +58,7 @@ namespace external_drive_lib.android
         }
 
         public string root_name {
-            get { return "{" + root_path_ + "}:\\"; }
+            get { return "{" + unique_id + "}:\\"; }
         }
         
         public IEnumerable<IFolder> folders {
@@ -90,6 +90,12 @@ namespace external_drive_lib.android
         }
 
         public IFile parse_file(string path) {
+            var unique_drive_id = "{" + unique_id + "}";
+            if (path.StartsWith(unique_drive_id))
+                path = path.Replace(unique_drive_id, root_path_);
+            else
+                path = root_ + "\\" + path;
+
             var fi = (root_.GetFolder as Folder).ParseName( path.Replace("/", "\\") );
             if ( fi.IsFolder)
                 throw new exception("not a file: " + root_name + "\\" + path);
@@ -97,6 +103,12 @@ namespace external_drive_lib.android
         }
 
         public IFolder parse_folder(string path) {
+            var unique_drive_id = "{" + unique_id + "}";
+            if (path.StartsWith(unique_drive_id))
+                path = path.Replace(unique_drive_id, root_path_);
+            else
+                path = root_ + "\\" + path;
+
             var fi = (root_.GetFolder as Folder).ParseName( path.Replace("/", "\\") );
             if ( !fi.IsFolder)
                 throw new exception("not a folder: " + root_name + "\\" + path);
@@ -104,7 +116,7 @@ namespace external_drive_lib.android
         }
 
         public IFolder create_folder(string folder) {
-            // care about drive prefix - does it contain the root name/id or not?
+            // FIXME care about drive prefix - does it contain the root name/id or not?
             return null;
         }
     }

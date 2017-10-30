@@ -87,10 +87,11 @@ namespace console_test
 
         static void Main(string[] args)
         {
-            //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
+            traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
             test_win_parse_files();
             test_parent_folder();
             test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
+            traverse_drive( drive_root.inst.get_drive("{galaxy s6}"), 3);
         }
     }
 }
