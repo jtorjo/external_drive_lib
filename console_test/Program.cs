@@ -128,9 +128,6 @@ namespace console_test
             var renamed = dir + "\\" + name + ".renamed.jpg";
             File.Move(dir + "\\" + name, renamed);
             drive_root.inst.parse_file(renamed).copy_sync(android_prefix + ":/phone/dcim/");
-            // FIXME clearly, this is not ideal, but apparently, the copy is somehow synchronnously, and it takes a short while
-            //       for the folder to realize about the new copied file - not sure what to do at this time
-            Thread.Sleep(2500);
             Debug.Assert(first_file.size == drive_root.inst.parse_file(android_prefix + ":/phone/dcim/" + name + ".renamed.jpg").size);
         }
 
@@ -184,8 +181,6 @@ namespace console_test
             foreach ( var child in src.files)
                 child.copy_sync(dest_path);
 
-            // ugly, but since this happens somewhat sync, we need to sleep a bit before reading everything correctly (on android)
-            Thread.Sleep(2500);
             long src_size = src.files.Sum(f => f.size);
             long dest_size = dest.files.Sum(f => f.size);
             Debug.Assert(src_size == dest_size);
@@ -225,7 +220,8 @@ namespace console_test
             //android_test_create_delete_folder();
             //android_test_copy_and_delete_file();
 
-            test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
+            //test_copy_files_android_to_win_and_viceversa();
+            //test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             //android_test_copy_full_dir_to_windows();
         }
     }
