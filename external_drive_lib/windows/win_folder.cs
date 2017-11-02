@@ -71,7 +71,6 @@ namespace external_drive_lib.windows
             Directory.Delete(folder_name(), true);
         }
 
-
         public void copy_file(IFile file, bool synchronous) {
             var copy_options = 4 | 16 | 512 | 1024;
             var andoid = file as android_file;
@@ -96,36 +95,10 @@ namespace external_drive_lib.windows
                 var shell_folder = win_util.get_shell32_folder(fn);
                 shell_folder.CopyHere(andoid.folder_item(), copy_options);
                 if ( synchronous)
-                    wait_for_copy_complete(file, dest_path);
+                    win_util.wait_for_win_copy_complete(file.size, dest_path);
             }
         }
 
-        private long wait_for_file_size(string file_name, long size, int retry_count) {
-            long cur_size = -1;
-            for (int i = 0; i < retry_count && cur_size < size; ++i) {
-                if ( File.Exists(file_name))
-                    try {
-                        cur_size = new FileInfo(file_name).Length;
-                    } catch {
-                    }
-                if ( cur_size < size)
-                    Thread.Sleep(25);
-            }
-            return cur_size;
-        }
-
-        private void wait_for_copy_complete(IFile file, string dest_path) {
-            var size = file.size;
-
-            long last_size = -1;
-            // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
-            while (last_size < size) {
-                var cur_size = wait_for_file_size(dest_path, size, 10);
-                if ( cur_size == last_size)
-                    throw new exception("File may have not been copied - " + dest_path + " got " + cur_size + ", expected " + size);
-                last_size = cur_size;
-            }
-        }
 
     }
 }

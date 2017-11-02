@@ -218,10 +218,11 @@ namespace console_test
             //android_test_parse_files();
             //android_test_parent_folder();
             //android_test_create_delete_folder();
+
             //android_test_copy_and_delete_file();
 
             //test_copy_files_android_to_win_and_viceversa();
-            //test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
+            test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             //android_test_copy_full_dir_to_windows();
         }
     }

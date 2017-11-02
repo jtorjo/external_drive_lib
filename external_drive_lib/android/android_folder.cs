@@ -77,11 +77,13 @@ namespace external_drive_lib.android
 
 
         public void delete_async() {
-            Task.Run( () => win_util.delete_sync_android_folder(fi_));
+            var full = full_path;
+            Task.Run( () => win_util.delete_sync_android_folder(fi_, full));
         }
 
         public void delete_sync() {
-            win_util.delete_sync_android_folder(fi_);
+            var full = full_path;
+            win_util.delete_sync_android_folder(fi_, full);
         }
 
 
@@ -114,34 +116,9 @@ namespace external_drive_lib.android
 
             (fi_.GetFolder as Folder).CopyHere(dest_item, copy_options);
             if ( synchronous)
-                wait_for_copy_complete(souce_name, file.size);
+                win_util.wait_for_android_copy_complete(full_path + "\\" + souce_name, file.size);
         }
 
-        private long wait_for_file_size(string file_name, long size, int retry_count) {
-            long cur_size = -1;
-            for (int i = 0; i < retry_count && cur_size < size; ++i) {
-                var file = (fi_.GetFolder as Folder).ParseName(file_name) as FolderItem2;
-                if ( file != null)
-                    try {
-                        cur_size = android_util.android_file_size(file);
-                    } catch {
-                    }
-                if ( cur_size < size)
-                    Thread.Sleep(25);
-            }
-            return cur_size;
-        }
-
-        private void wait_for_copy_complete(string file_name, long size) {
-            long last_size = -1;
-            // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
-            while (last_size < size) {
-                var cur_size = wait_for_file_size(file_name, size, 10);
-                if ( cur_size == last_size)
-                    throw new exception("File may have not been copied - " + file_name + " got " + cur_size + ", expected " + size);
-                last_size = cur_size;
-            }
-        }
 
     }
 }
