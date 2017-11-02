@@ -62,11 +62,15 @@ namespace external_drive_lib.windows
         }
 
         public void delete_async() {
+            Task.Run(() => delete_sync());
+        }
+
+        public void delete_sync() {
             Directory.Delete(folder_name(), true);
         }
 
 
-        public void copy_file(IFile file) {
+        public void copy_file(IFile file, bool synchronous) {
             var copy_options = 4 | 16 | 512 | 1024;
             var andoid = file as android_file;
             var win = file as win_file;

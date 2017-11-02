@@ -97,7 +97,7 @@ namespace console_test
 
         static void android_test_create_delete_folder() {
             Debug.Assert(drive_root.inst.new_folder(android_prefix + ":/phone/dcim/testing123") != null);
-            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123").delete_async();
+            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123").delete_sync();
             try {
                 drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123");
                 Debug.Assert(false);
@@ -110,20 +110,20 @@ namespace console_test
         static void android_test_copy_and_delete_file() {
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             var first_file = camera.files.ToList()[0];
-            first_file.copy_async(camera.parent.full_path);
+            first_file.copy_sync(camera.parent.full_path);
 
             // copy : android to windows
             var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(dir);
-            first_file.copy_async(dir);
+            first_file.copy_sync(dir);
             var name = first_file.name;
             Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
 
             // copy: windows to android
             var renamed = dir + "\\" + name + ".renamed.jpg";
             File.Move(dir + "\\" + name, renamed);
-            drive_root.inst.parse_file(renamed).copy_async(android_prefix + ":/phone/dcim/");
-            // FIXME clearly, this is not ideal, but apparently, the copy is somehow asynchronnously, and it takes a short while
+            drive_root.inst.parse_file(renamed).copy_sync(android_prefix + ":/phone/dcim/");
+            // FIXME clearly, this is not ideal, but apparently, the copy is somehow synchronnously, and it takes a short while
             //       for the folder to realize about the new copied file - not sure what to do at this time
             Thread.Sleep(2500);
             Debug.Assert(first_file.size == drive_root.inst.parse_file(android_prefix + ":/phone/dcim/" + name + ".renamed.jpg").size);
@@ -142,7 +142,7 @@ namespace console_test
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             foreach (var f in camera.files) {
                 Console.WriteLine(f.name);
-                f.copy_async(dest_dir);
+                f.copy_sync(dest_dir);
             }
             var spent_time = (DateTime.Now - start).TotalMilliseconds;
             Console.WriteLine("spent " + spent_time.ToString("f2") + " ms");
@@ -159,16 +159,16 @@ namespace console_test
             var child_dir = src_path + "/child1/child2/child3/";
             var dest = src.drive.create_folder(child_dir);
             foreach ( var child in src.files)
-                child.copy_async(child_dir);
+                child.copy_sync(child_dir);
             long src_size = src.files.Sum(f => f.size);
             long dest_size = dest.files.Sum(f => f.size);
             Debug.Assert(src_size == dest_size);
             Debug.Assert(src.child_folders.Count() == old_folder_count + 1);
             foreach (var child in dest.files)
-                child.delete_async();
+                child.delete_sync();
 
             var first_child = dest.parent.parent;
-            first_child.delete_async();
+            first_child.delete_sync();
 
             Debug.Assert(src.child_folders.Count() == old_folder_count );
         }
@@ -178,13 +178,23 @@ namespace console_test
             var src = drive_root.inst.parse_folder(src_path);
             var dest = drive_root.inst.new_folder(dest_path);
             foreach ( var child in src.files)
-                child.copy_async(dest_path);
+                child.copy_sync(dest_path);
 
-            // ugly, but since this happens somewhat async, we need to sleep a bit before reading everything correctly (on android)
+            // ugly, but since this happens somewhat sync, we need to sleep a bit before reading everything correctly (on android)
             Thread.Sleep(2500);
             long src_size = src.files.Sum(f => f.size);
             long dest_size = dest.files.Sum(f => f.size);
             Debug.Assert(src_size == dest_size);
+        }
+
+        static void test_copy_files_android_to_win_and_viceversa() {
+            // first from android to win, then vice versa
+            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
+            Directory.CreateDirectory(temp_dir);
+            test_copy_files(android_prefix + ":/phone/dcim/facebook", temp_dir);
+            test_copy_files(temp_dir, android_prefix + ":/phone/dcim/facebook_copy");
+            drive_root.inst.parse_folder(temp_dir).delete_sync();
+            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/facebook_copy").delete_sync();            
         }
 
         static void Main(string[] args)
@@ -201,14 +211,7 @@ namespace console_test
             //android_test_copy_and_delete_file();
             //android_test_copy_full_dir_to_windows();
             // first from android to win, then vice versa
-            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
-            Directory.CreateDirectory(temp_dir);
-            test_copy_files(android_prefix + ":/phone/dcim/facebook", temp_dir);
-            test_copy_files(temp_dir, android_prefix + ":/phone/dcim/facebook_copy");
-            drive_root.inst.parse_folder(temp_dir).delete_async();
-            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/facebook_copy").delete_async();
-
-            // test_copy_and_delete_files
+            android_test_copy_full_dir_to_windows();
         }
     }
 }

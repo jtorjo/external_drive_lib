@@ -25,13 +25,16 @@ namespace external_drive_lib.interfaces
 
         // throws if there's an error
         void delete_async();
+
+        // throws if there's an error
+        void delete_sync();
     }
 
     // this is not exposed - so that users only use IFile.copy() instead
     internal interface IFolder2 : IFolder {
         // this is the only way to make sure a file gets copied where it should, no matter where the destination is
         // (since we could copy a file from android to sd card or whereever)
-        void copy_file(IFile file);
+        void copy_file(IFile file, bool synchronous);
         
     }
 }

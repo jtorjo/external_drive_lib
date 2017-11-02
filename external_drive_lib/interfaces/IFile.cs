@@ -29,6 +29,10 @@ namespace external_drive_lib.interfaces {
         void copy_async(string dest_path);
         // throws if there's an error
         void delete_async();
+
+        void copy_sync(string dest_path);
+        void delete_sync();
+
     }
 
 }

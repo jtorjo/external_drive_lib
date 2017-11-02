@@ -1,14 +1,21 @@
 ﻿copy_sync, move_sync, delete_sync
             // -> wait like 10 times for file size. if different, continue. if same size (< what we expect) => throw
+			     if fail -> throw exception maybe not complete?
 
 look for "Copying#" (#32770) with child DirectUIHWND
 
-see if android_file.exists actually works /same for android_drive.connected
+see if android_file.exists actually works /same for android_folder and  android_drive.connected
 
 use real unique_id + galaxy s6 is friendly name
 
 
 
 
-
 readme + licensing
+
+
+
+todo:
+make it work for all external drives (even CDroms etc)
+bulk operations
+implement move()

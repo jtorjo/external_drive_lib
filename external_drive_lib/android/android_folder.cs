@@ -78,9 +78,11 @@ namespace external_drive_lib.android
             win_util.delete_folder_item(fi_);
         }
 
+        public void delete_sync() {
+        }
 
 
-        public void copy_file(IFile file) {
+        public void copy_file(IFile file, bool synchronous) {
             var copy_options = 4 | 8 | 16 | 512 | 1024 | 0x00400000;
             var andoid = file as android_file;
             var win = file as win_file;
