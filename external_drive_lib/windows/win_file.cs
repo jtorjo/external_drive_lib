@@ -38,7 +38,7 @@ namespace external_drive_lib.windows
         public long size => new FileInfo(full_path).Length;
         public DateTime last_write_time => new FileInfo(full_path).LastWriteTime;
 
-        public void copy(string dest_path) {
+        public void copy_async(string dest_path) {
             var dest = drive_root.inst.parse_folder(dest_path) as IFolder2;
             if ( dest != null)
                 dest.copy_file(this);
@@ -46,7 +46,7 @@ namespace external_drive_lib.windows
                 throw new exception("destination path does not exist: " + dest_path);
         }
 
-        public void delete() {
+        public void delete_async() {
             File.Delete(full_path);
         }
     }

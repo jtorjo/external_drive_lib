@@ -56,7 +56,7 @@ namespace external_drive_lib.windows
             get { return new DirectoryInfo(root_).EnumerateFiles().Select(f => new win_file(root_, f.Name)); }
         }
 
-        public IFile parse_file(string path) {
+        public IFile parse_file_name(string path) {
             path = path.Replace("/", "\\");
             var contains_drive_prefix = path.StartsWith(root_, StringComparison.CurrentCultureIgnoreCase);
             var full = contains_drive_prefix ? path : root_ + path;
@@ -67,7 +67,7 @@ namespace external_drive_lib.windows
             throw new exception("not an existing file " + full);
         }
 
-        public IFolder parse_folder(string path) {
+        public IFolder parse_folder_name(string path) {
             path = path.Replace("/", "\\");
             var contains_drive_prefix = path.StartsWith(root_, StringComparison.CurrentCultureIgnoreCase);
             var full = contains_drive_prefix ? path : root_ + path;
@@ -87,7 +87,7 @@ namespace external_drive_lib.windows
                 path = root_ + path;
             Directory.CreateDirectory(path);
 
-            return parse_folder(path);
+            return parse_folder_name(path);
         }
     }
 }

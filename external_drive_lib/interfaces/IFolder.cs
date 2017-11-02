@@ -24,7 +24,7 @@ namespace external_drive_lib.interfaces
         IEnumerable<IFolder> child_folders { get; }
 
         // throws if there's an error
-        void delete();
+        void delete_async();
     }
 
     // this is not exposed - so that users only use IFile.copy() instead

@@ -74,18 +74,11 @@ namespace external_drive_lib.android
         }
 
 
-        public void delete() {
+        public void delete_async() {
             win_util.delete_folder_item(fi_);
         }
 
-        // FIXME CopyHere, MoveHere are async - there's no real way to know when they end
-        //       so probably the correct way to test for copy-complete is to look at the size of the end file and sleep in-between
 
-        // FIXME sometimes the stupid progress-bar is still shown - I'm assuming Windows sometimes puts this when operation takes too long
-        //       see if i can turn this off
-        //
-        // note: the window is a dialog, "Copying..." (#32770), with a child DirectUIHWND - AND it's toplevel and it's from our process - rather easy to find
-        //       and hide -> should be able to have a thread dealing with this, like -> ask for something like this every 250ms
 
         public void copy_file(IFile file) {
             var copy_options = 4 | 8 | 16 | 512 | 1024 | 0x00400000;

@@ -95,7 +95,7 @@ namespace external_drive_lib.android
             }
         }
 
-        public void copy(string dest_path) {
+        public void copy_async(string dest_path) {
             var dest = drive_root.inst.parse_folder(dest_path) as IFolder2;
             if ( dest != null)
                 dest.copy_file(this);
@@ -104,7 +104,7 @@ namespace external_drive_lib.android
         }
 
         
-        public void delete() {
+        public void delete_async() {
             win_util.delete_folder_item(fi_);
         }
     }

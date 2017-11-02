@@ -61,7 +61,7 @@ namespace external_drive_lib.windows
             }
         }
 
-        public void delete() {
+        public void delete_async() {
             Directory.Delete(folder_name(), true);
         }
 

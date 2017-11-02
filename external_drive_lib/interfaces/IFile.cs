@@ -26,9 +26,9 @@ namespace external_drive_lib.interfaces {
         // note: move can be implemented via copy() + delete()
         //
         // note: overwrites if destination exists
-        void copy(string dest_path);
+        void copy_async(string dest_path);
         // throws if there's an error
-        void delete();
+        void delete_async();
     }
 
 }

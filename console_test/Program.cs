@@ -97,7 +97,7 @@ namespace console_test
 
         static void android_test_create_delete_folder() {
             Debug.Assert(drive_root.inst.new_folder(android_prefix + ":/phone/dcim/testing123") != null);
-            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123").delete();
+            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123").delete_async();
             try {
                 drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/testing123");
                 Debug.Assert(false);
@@ -110,19 +110,19 @@ namespace console_test
         static void android_test_copy_and_delete_file() {
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             var first_file = camera.files.ToList()[0];
-            first_file.copy(camera.parent.full_path);
+            first_file.copy_async(camera.parent.full_path);
 
             // copy : android to windows
             var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(dir);
-            first_file.copy(dir);
+            first_file.copy_async(dir);
             var name = first_file.name;
             Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
 
             // copy: windows to android
             var renamed = dir + "\\" + name + ".renamed.jpg";
             File.Move(dir + "\\" + name, renamed);
-            drive_root.inst.parse_file(renamed).copy(android_prefix + ":/phone/dcim/");
+            drive_root.inst.parse_file(renamed).copy_async(android_prefix + ":/phone/dcim/");
             // FIXME clearly, this is not ideal, but apparently, the copy is somehow asynchronnously, and it takes a short while
             //       for the folder to realize about the new copied file - not sure what to do at this time
             Thread.Sleep(2500);
@@ -142,7 +142,7 @@ namespace console_test
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             foreach (var f in camera.files) {
                 Console.WriteLine(f.name);
-                f.copy(dest_dir);
+                f.copy_async(dest_dir);
             }
             var spent_time = (DateTime.Now - start).TotalMilliseconds;
             Console.WriteLine("spent " + spent_time.ToString("f2") + " ms");
@@ -159,16 +159,16 @@ namespace console_test
             var child_dir = src_path + "/child1/child2/child3/";
             var dest = src.drive.create_folder(child_dir);
             foreach ( var child in src.files)
-                child.copy(child_dir);
+                child.copy_async(child_dir);
             long src_size = src.files.Sum(f => f.size);
             long dest_size = dest.files.Sum(f => f.size);
             Debug.Assert(src_size == dest_size);
             Debug.Assert(src.child_folders.Count() == old_folder_count + 1);
             foreach (var child in dest.files)
-                child.delete();
+                child.delete_async();
 
             var first_child = dest.parent.parent;
-            first_child.delete();
+            first_child.delete_async();
 
             Debug.Assert(src.child_folders.Count() == old_folder_count );
         }
@@ -178,7 +178,7 @@ namespace console_test
             var src = drive_root.inst.parse_folder(src_path);
             var dest = drive_root.inst.new_folder(dest_path);
             foreach ( var child in src.files)
-                child.copy(dest_path);
+                child.copy_async(dest_path);
 
             // ugly, but since this happens somewhat async, we need to sleep a bit before reading everything correctly (on android)
             Thread.Sleep(2500);
@@ -205,8 +205,8 @@ namespace console_test
             Directory.CreateDirectory(temp_dir);
             test_copy_files(android_prefix + ":/phone/dcim/facebook", temp_dir);
             test_copy_files(temp_dir, android_prefix + ":/phone/dcim/facebook_copy");
-            drive_root.inst.parse_folder(temp_dir).delete();
-            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/facebook_copy").delete();
+            drive_root.inst.parse_folder(temp_dir).delete_async();
+            drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/facebook_copy").delete_async();
 
             // test_copy_and_delete_files
         }
