@@ -1,0 +1,3 @@
+﻿
+1.0.1a
+added copy_sync/del_sync - not finished
