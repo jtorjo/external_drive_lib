@@ -116,6 +116,7 @@ namespace external_drive_lib.windows
             foreach (var f in dir.EnumerateFiles())
                 size += f.Length;
         }
+        // FIXME surround in try/catch?
         public static void wait_for_win_folder_move_complete(string folder, string old_full_path) {
             long last_size = -1;
             const int retry_find_folder_move_complete = 20;

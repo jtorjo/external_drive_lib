@@ -4,3 +4,6 @@ added copy_sync/del_sync - not finished
 
 1.0.1b
 copy_sync seems to work - both to and from android to windows
+
+1.0.1c
+delete_sync / copy_sync work -> however, apparently sync operations win->android is slow (because of how we're testing to make sure it's good)

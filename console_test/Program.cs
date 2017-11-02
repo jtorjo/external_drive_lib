@@ -178,8 +178,11 @@ namespace console_test
         static void test_copy_files(string src_path, string dest_path) {
             var src = drive_root.inst.parse_folder(src_path);
             var dest = drive_root.inst.new_folder(dest_path);
-            foreach ( var child in src.files)
+            foreach (var child in src.files) {
+                Console.Write(child.full_path);
                 child.copy_sync(dest_path);
+                Console.WriteLine(" - done");
+            }
 
             long src_size = src.files.Sum(f => f.size);
             long dest_size = dest.files.Sum(f => f.size);
@@ -221,8 +224,8 @@ namespace console_test
 
             //android_test_copy_and_delete_file();
 
-            //test_copy_files_android_to_win_and_viceversa();
-            test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
+            test_copy_files_android_to_win_and_viceversa();
+            //test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             //android_test_copy_full_dir_to_windows();
         }
     }
