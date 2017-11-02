@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -33,19 +34,19 @@ namespace external_drive_lib.windows
                                                      System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { folder_path });
         }
 
-        public static void delete_folder_item(FolderItem fi) {
+        // note: this can only happen synchronously - otherwise, we'd end up deleting something from HDD before it was fully moved from the HDD
+        public static void delete_sync_android_file(FolderItem fi) {
+            Debug.Assert( !fi.IsFolder);
             // https://msdn.microsoft.com/en-us/library/windows/desktop/bb787874(v=vs.85).aspx
             var move_options = 4 | 16 | 512 | 1024;
             try {
                 var temp = win_util.temporary_root_dir();
                 var temp_folder = win_util.get_shell32_folder(temp);
-                var folder_or_file_name = fi.Name;
+                var file_name = fi.Name;
                 temp_folder.MoveHere(fi, move_options);
-                var name = temp + "\\" + folder_or_file_name;
+                var name = temp + "\\" + file_name;
                 if ( File.Exists(name))
                     File.Delete(name);
-                else 
-                    Directory.Delete(temp + "\\" + folder_or_file_name, true);
             } catch {
                 // backup - this will prompt a confirmation dialog
                 // googled it quite a bit - there's no way to disable it
@@ -53,5 +54,30 @@ namespace external_drive_lib.windows
             }
             
         }
+
+        // note: this can only happen synchronously - otherwise, we'd end up deleting something from HDD before it was fully moved from the HDD
+        public static void delete_sync_android_folder(FolderItem fi) {
+            Debug.Assert( fi.IsFolder);
+
+            // https://msdn.microsoft.com/en-us/library/windows/desktop/bb787874(v=vs.85).aspx
+            var move_options = 4 | 16 | 512 | 1024;
+            try {
+                var temp = win_util.temporary_root_dir();
+                var temp_folder = win_util.get_shell32_folder(temp);
+                var folder_name = fi.Name;
+                temp_folder.MoveHere(fi, move_options);
+
+                // wait until folder dissapears from Android (the alternative would be to check all the file sizes match the original file sizes.
+                // however, we'd need to do this recursively)
+                var name = temp + "\\" + folder_name;
+                Directory.Delete(name, true);
+            } catch {
+                // backup - this will prompt a confirmation dialog
+                // googled it quite a bit - there's no way to disable it
+                fi.InvokeVerb("delete");
+            }
+            
+        }
+
     }
 }

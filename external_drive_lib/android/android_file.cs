@@ -49,31 +49,7 @@ namespace external_drive_lib.android
 
         public long size {
             get {
-                try {
-                    var sz = (long)fi_.ExtendedProperty("size");
-                    return sz;
-                } catch {
-                }
-                try {
-                    // this will return something like, "3.34 KB" or so
-                    var size_str = (fi_.Parent as Folder).GetDetailsOf(fi_, 2).ToLower();
-
-                    var multiply_by = 1;
-                    if (size_str.EndsWith("kb")) {
-                        multiply_by = 1024;
-                        size_str = size_str.Substring(0, size_str.Length - 2);
-                    } else if (size_str.EndsWith("mb")) {
-                        multiply_by = 1024 * 1024;
-                        size_str = size_str.Substring(0, size_str.Length - 2);
-                    }
-                    size_str = size_str.Trim();
-
-                    double size_double = 0;
-                    double.TryParse(size_str, out size_double);
-                    return (long) (size_double * multiply_by);
-                } catch {
-                    return -1;
-                }
+                return android_util.android_file_size(fi_);
             }
         }
 
@@ -105,7 +81,7 @@ namespace external_drive_lib.android
 
         
         public void delete_async() {
-            win_util.delete_folder_item(fi_);
+            Task.Run( () => win_util.delete_sync_android_file(fi_));
         }
 
         public void copy_sync(string dest_path) {
@@ -117,6 +93,7 @@ namespace external_drive_lib.android
         }
 
         public void delete_sync() {
+            win_util.delete_sync_android_file(fi_);
         }
     }
 }

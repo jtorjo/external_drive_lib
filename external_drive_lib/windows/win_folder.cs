@@ -4,8 +4,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib.android;
+using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using Shell32;
 
@@ -79,16 +81,51 @@ namespace external_drive_lib.windows
 
             var fn = folder_name();
             var dest_path = fn + "\\" + file.name;
-            if (win != null) 
-                File.Copy(file.full_path, dest_path, true);
-            else if (andoid != null) {
+            if (win != null) {
+                if (synchronous)
+                    File.Copy(file.full_path, dest_path, true);
+                else
+                    Task.Run(() => File.Copy(file.full_path, dest_path, true));
+            } else if (andoid != null) {
+                // android file to windows:
+
                 // Windows stupidity - if file exists, it will display a stupid "Do you want to replace" dialog,
                 // even if we speicifically told it not to (via the copy options)
-                if ( File.Exists(dest_path))
+                if (File.Exists(dest_path))
                     File.Delete(dest_path);
-                var shell_folder = win_util.get_shell32_folder( fn) ;
-                shell_folder .CopyHere(andoid.folder_item(), copy_options);
+                var shell_folder = win_util.get_shell32_folder(fn);
+                shell_folder.CopyHere(andoid.folder_item(), copy_options);
+                if ( synchronous)
+                    wait_for_copy_complete(file, dest_path);
             }
         }
+
+        private long wait_for_file_size(string file_name, long size, int retry_count) {
+            long cur_size = -1;
+            for (int i = 0; i < retry_count && cur_size < size; ++i) {
+                if ( File.Exists(file_name))
+                    try {
+                        cur_size = new FileInfo(file_name).Length;
+                    } catch {
+                    }
+                if ( cur_size < size)
+                    Thread.Sleep(25);
+            }
+            return cur_size;
+        }
+
+        private void wait_for_copy_complete(IFile file, string dest_path) {
+            var size = file.size;
+
+            long last_size = -1;
+            // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
+            while (last_size < size) {
+                var cur_size = wait_for_file_size(dest_path, size, 10);
+                if ( cur_size == last_size)
+                    throw new exception("File may have not been copied - " + dest_path + " got " + cur_size + ", expected " + size);
+                last_size = cur_size;
+            }
+        }
+
     }
 }

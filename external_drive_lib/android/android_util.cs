@@ -33,5 +33,33 @@ namespace external_drive_lib.android
                 list.Add(verb.Name);
             return list;
         }
+
+        public static long android_file_size(FolderItem2 fi) {
+            try {
+                var sz = (long)fi.ExtendedProperty("size");
+                return sz;
+            } catch {
+            }
+            try {
+                // this will return something like, "3.34 KB" or so
+                var size_str = (fi.Parent as Folder).GetDetailsOf(fi, 2).ToLower();
+
+                var multiply_by = 1;
+                if (size_str.EndsWith("kb")) {
+                    multiply_by = 1024;
+                    size_str = size_str.Substring(0, size_str.Length - 2);
+                } else if (size_str.EndsWith("mb")) {
+                    multiply_by = 1024 * 1024;
+                    size_str = size_str.Substring(0, size_str.Length - 2);
+                }
+                size_str = size_str.Trim();
+
+                double size_double = 0;
+                double.TryParse(size_str, out size_double);
+                return (long) (size_double * multiply_by);
+            } catch {
+                return -1;
+            }            
+        }
     }
 }

@@ -13,6 +13,12 @@ namespace console_test
 {
     class Program
     {
+        static string new_temp_path() {
+            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
+            Directory.CreateDirectory(temp_dir);
+            return temp_dir;
+        }
+
         static void dump_folders_and_files(IEnumerable<IFolder> folders, IEnumerable<IFile> files, int indent) {
             Console.WriteLine("");
             Console.WriteLine("Level " + (indent+1));
@@ -113,8 +119,7 @@ namespace console_test
             first_file.copy_sync(camera.parent.full_path);
 
             // copy : android to windows
-            var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
-            Directory.CreateDirectory(dir);
+            var dir = new_temp_path();
             first_file.copy_sync(dir);
             var name = first_file.name;
             Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
@@ -137,8 +142,7 @@ namespace console_test
         // 67 secs copy from xplorer (clearly, this was a bulk copy)
         static void android_test_copy_full_dir_to_windows() {
             DateTime start = DateTime.Now;
-            var dest_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
-            Directory.CreateDirectory(dest_dir);
+            var dest_dir = new_temp_path();
             var camera = drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/camera");
             foreach (var f in camera.files) {
                 Console.WriteLine(f.name);
@@ -189,12 +193,23 @@ namespace console_test
 
         static void test_copy_files_android_to_win_and_viceversa() {
             // first from android to win, then vice versa
-            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
-            Directory.CreateDirectory(temp_dir);
+            var temp_dir = new_temp_path();
             test_copy_files(android_prefix + ":/phone/dcim/facebook", temp_dir);
             test_copy_files(temp_dir, android_prefix + ":/phone/dcim/facebook_copy");
             drive_root.inst.parse_folder(temp_dir).delete_sync();
             drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/facebook_copy").delete_sync();            
+        }
+
+        static void test_long_android_copy(string file_name) {
+            var temp_dir = new_temp_path();
+            var src_file = drive_root.inst.parse_file(file_name);
+            src_file.copy_sync(temp_dir);
+            var dest_file = temp_dir + "\\" + src_file.name;
+            Debug.Assert(src_file.size == drive_root.inst.parse_file(dest_file).size);
+            File.Move(dest_file, dest_file + ".renamed");
+            drive_root.inst.parse_file(dest_file + ".renamed").copy_sync(android_prefix + ":/phone/dcim");
+            Debug.Assert(drive_root.inst.parse_file(android_prefix + ":/phone/dcim/" + src_file.name + ".renamed").size == src_file.size);
+            drive_root.inst.parse_file(android_prefix + ":/phone/dcim/" + src_file.name + ".renamed").delete_sync();
         }
 
         static void Main(string[] args)
@@ -209,9 +224,9 @@ namespace console_test
             //android_test_parent_folder();
             //android_test_create_delete_folder();
             //android_test_copy_and_delete_file();
+
+            test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             //android_test_copy_full_dir_to_windows();
-            // first from android to win, then vice versa
-            android_test_copy_full_dir_to_windows();
         }
     }
 }

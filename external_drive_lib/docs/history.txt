@@ -1,3 +1,6 @@
 ﻿
 1.0.1a
 added copy_sync/del_sync - not finished
+
+1.0.1b
+copy_sync seems to work - both to and from android to windows

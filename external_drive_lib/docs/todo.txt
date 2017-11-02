@@ -2,6 +2,8 @@
             // -> wait like 10 times for file size. if different, continue. if same size (< what we expect) => throw
 			     if fail -> throw exception maybe not complete?
 
+delete_sync -> implement in android
+
 look for "Copying#" (#32770) with child DirectUIHWND
 
 see if android_file.exists actually works /same for android_folder and  android_drive.connected
