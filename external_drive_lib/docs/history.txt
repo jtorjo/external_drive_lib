@@ -14,4 +14,9 @@ bulk copy finally works
 1.0.1e
 look for "Copying#" (#32770) with child DirectUIHWND
 
+1.0.1f
+if autorefresh -> update android drives on add/delete; actually -> autorefresh all the time.
+refresh() -> for android drives check "connected_via_usb", reuse what possible
+use real unique_id + galaxy s6 is friendly name
+
 

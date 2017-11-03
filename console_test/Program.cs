@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using external_drive_lib;
 using external_drive_lib.bulk;
 using external_drive_lib.interfaces;
+using external_drive_lib.monitor;
 using external_drive_lib.raw_tests;
 
 namespace console_test
@@ -254,6 +255,22 @@ namespace console_test
             drive_root.inst.parse_folder(dest_android_copy).delete_sync();
         }
 
+        static void test_android_disconnected() {
+            var camera = android_prefix + ":/phone/dcim/camera";
+            var first_file = drive_root.inst.parse_folder(camera).files.ToList()[0];
+            logger.Debug("camera file " + first_file.size);
+            logger.Debug("Disconnect the phone now.");
+            Console.ReadLine();
+            var exists = first_file.exists;
+            logger.Debug("file still exists " + exists);
+
+        }
+
+        private static void print_device_properties(Dictionary<string, string> properties, string prefix) {
+            Console.WriteLine(prefix);
+            foreach ( var p in properties)
+                Console.WriteLine("  " + p.Key + "=" + p.Value);
+        }
 
         static void Main(string[] args)
         {
@@ -268,6 +285,10 @@ namespace console_test
 //            test_folderitems.test_android_folderitems3();
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
             logger.Debug("test started");
+
+            test_android_disconnected();
+            return;
+
             test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             test_bulk_copy();
 

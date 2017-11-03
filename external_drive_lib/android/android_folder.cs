@@ -36,8 +36,9 @@ namespace external_drive_lib.android
         public bool exists {
             get {
                 try {
-                    // ask for attributes - I expect this will initiate a system call, and if we're disconnected, it will throw
-                    (fi_.GetFolder as Folder).GetDetailsOf(null, 4);
+                    if (drive.is_connected())
+                        // if this throws, drive exists, but folder does not
+                        drive_root.inst.parse_folder(full_path);
                     return true;
                 } catch {
                     return false;

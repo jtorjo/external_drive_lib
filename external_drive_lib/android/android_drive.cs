@@ -21,15 +21,30 @@ namespace external_drive_lib.android
         private string friendly_name_;
 
         private string root_path_;
+        private string vid_pid_ = "";
+
+        private string unique_id_ = "";
 
         private bool enumerated_children_ = false;
         private List<IFolder> folders_ = new List<IFolder>();
         private List<IFile> files_ = new List<IFile>();
 
+        private bool connected_via_usb_ = true;
+
         public android_drive(FolderItem fi) {
             root_ = fi;
             friendly_name_ = root_.Name;
             root_path_ = root_.Path;
+
+            var idx = root_path_.IndexOf("vid_");
+            Debug.Assert(idx >= 0);
+            if (idx >= 0) {
+                var idx2 = root_path_.IndexOf("pid_", idx);
+                var idx3 = root_path_.IndexOf("&", idx2);
+                vid_pid_ = root_path_.Substring(idx, idx3 - idx);
+            }
+            unique_id_ = unique_id;
+
             find_drive_type();
         }
 
@@ -49,14 +64,20 @@ namespace external_drive_lib.android
             }
         }
 
-        // FIXME test!
+        internal bool connected_via_usb {
+            get { return connected_via_usb_; }
+            set { connected_via_usb_ = value; }
+        }
+
         public bool is_connected() {
             try {
-                var items = (root_.GetFolder as Folder).Items();
-                return items.Count >= 1;
+                if (connected_via_usb) {
+                    var items = (root_.GetFolder as Folder).Items();
+                    return items.Count >= 1;
+                }
             } catch {
-                return false;
             }
+            return false;
         }
 
         public drive_type type {
@@ -88,11 +109,16 @@ namespace external_drive_lib.android
 
         // FIXME
         public string unique_id {
-            get { return friendly_name; }
+            get { return unique_id_; }
+            internal set { unique_id_ = value; }
         }
 
         public string friendly_name {
             get { return friendly_name_; }
+        }
+
+        public string vid_pid {
+            get { return vid_pid_; }
         }
 
         private FolderItem parse_sub_folder(IEnumerable<string> sub_folder_path) {

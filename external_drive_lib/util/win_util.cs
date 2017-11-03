@@ -180,7 +180,14 @@ namespace external_drive_lib.windows
                 // googled it quite a bit - there's no way to disable it
                 fi.InvokeVerb("delete");
             }
-            
+        }
+
+        public static void postpone(Action a, int ms) {
+            // not the best work, but for now it works
+            Task.Run(() => {
+                Thread.Sleep(ms);
+                a();
+            });
         }
 
     }

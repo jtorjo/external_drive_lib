@@ -1,8 +1,11 @@
-﻿
+﻿use [a0] for first android drive
 
 see if android_file.exists actually works /same for android_folder and  android_drive.connected
 
-use real unique_id + galaxy s6 is friendly name
+
+
+
+
 
 
 
@@ -13,6 +16,13 @@ use real unique_id + galaxy s6 is friendly name
 readme + licensing
 
 
+explain:
+about bulk copy
+about drive connected
+about hiding progress windows
+about delete by move
+about disconnected, file/folder.exists
+use [a0] for first android drive
 
 
 

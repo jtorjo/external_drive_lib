@@ -46,8 +46,22 @@ namespace external_drive_lib.monitor
                 Console.WriteLine("-------------");
                 foreach (var property in o.Properties)
                     Console.WriteLine(property.Name + " = " + property.Value);                
-            }
-            
+            }            
         }
+
+        public static List< Dictionary<string,string>> find_objects(string type) {
+            List<Dictionary<string, string>> result = new List<Dictionary<string, string>>();
+            var search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM " + type);
+            foreach (ManagementObject o in search.Get()) {
+                Dictionary<string,string> properties = new Dictionary<string, string>();
+                foreach (var p in o.Properties)
+                    if ( p.Value != null)
+                        properties.Add(p.Name, p.Value.ToString());                
+                result.Add(properties);
+            }
+
+            return result;
+        }
+
     }
 }

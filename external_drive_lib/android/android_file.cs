@@ -33,11 +33,12 @@ namespace external_drive_lib.android
 
         public string full_path => drive_.parse_android_path(fi_);
 
-        // FIXME to test
         public bool exists {
             get {
                 try {
-                    var s = size;
+                    if (drive.is_connected())
+                        // if this throws, drive exists, but file does not
+                        drive_root.inst.parse_file(full_path);
                     return true;
                 } catch {
                     return false;
