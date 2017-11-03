@@ -1,14 +1,9 @@
 ﻿
-look for "Copying#" (#32770) with child DirectUIHWND
 
 see if android_file.exists actually works /same for android_folder and  android_drive.connected
 
 use real unique_id + galaxy s6 is friendly name
 
-bulk operations -> apparently sync operations win->android is slow (because of how we're testing to make sure it's good)
---> FolderItems - >bulk does not really work. just bulk copy/delete -> monitor for several files at once
-- FolderItems3 on a windows folder
-bulk.copy() -> async + wait, 
 
 
 

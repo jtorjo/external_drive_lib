@@ -11,3 +11,7 @@ delete_sync / copy_sync work -> however, apparently sync operations win->android
 1.0.1d
 bulk copy finally works
 
+1.0.1e
+look for "Copying#" (#32770) with child DirectUIHWND
+
+

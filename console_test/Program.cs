@@ -15,6 +15,8 @@ namespace console_test
 {
     class Program
     {
+        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         static string new_temp_path() {
             var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(temp_dir);
@@ -264,6 +266,9 @@ namespace console_test
             //android_test_parse_files();
             //android_test_parent_folder();
 //            test_folderitems.test_android_folderitems3();
+            log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
+            logger.Debug("test started");
+            test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             test_bulk_copy();
 
             android_test_create_delete_folder();
@@ -273,7 +278,6 @@ namespace console_test
 
 
             test_copy_files_android_to_win_and_viceversa();
-            test_long_android_copy(android_prefix + ":/phone/dcim/camera/20171017_195655.mp4");
             android_test_copy_full_dir_to_windows();
         }
     }

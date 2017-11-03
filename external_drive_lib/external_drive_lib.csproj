@@ -48,7 +48,7 @@
     <Compile Include="android\android_drive.cs" />
     <Compile Include="android\android_file.cs" />
     <Compile Include="android\android_folder.cs" />
-    <Compile Include="android\android_util.cs" />
+    <Compile Include="util\android_util.cs" />
     <Compile Include="bulk\bulk.cs" />
     <Compile Include="drive_root.cs" />
     <Compile Include="exceptions\exception.cs" />
@@ -59,10 +59,12 @@
     <Compile Include="monitor\monitor_devices.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="raw_tests\test_folderitems.cs" />
+    <Compile Include="util\enum_process_windows.cs" />
+    <Compile Include="util\win32_util.cs" />
     <Compile Include="windows\win_drive.cs" />
     <Compile Include="windows\win_file.cs" />
     <Compile Include="windows\win_folder.cs" />
-    <Compile Include="windows\win_util.cs" />
+    <Compile Include="util\win_util.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="Shell32">

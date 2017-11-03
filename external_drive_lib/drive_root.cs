@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
+using external_drive_lib.util;
 using external_drive_lib.windows;
 using Shell32;
 
@@ -19,6 +21,8 @@ namespace external_drive_lib
         public static drive_root inst { get; } = new drive_root();
 
         private bool auto_refresh_ = false;
+
+        private bool auto_close_win_dialogs_ = true;
         
         public bool auto_refresh {
             get { return auto_refresh_; }
@@ -31,6 +35,7 @@ namespace external_drive_lib
 
         private drive_root() {
             refresh();
+            new Thread(win32_util.check_for_dialogs_thread) {IsBackground = true}.Start();
         }
 
         // returns all drives, even the internal HDDs - you might need this if you want to copy a file onto an external drive
@@ -39,6 +44,15 @@ namespace external_drive_lib
         }
         public IReadOnlyList<IDrive> external_drives {
             get { lock(this) return external_drives_; }
+        }
+
+        public bool auto_close_win_dialogs {
+            get { return auto_close_win_dialogs_; }
+            set {
+                if (auto_close_win_dialogs_ == value)
+                    return;
+                auto_close_win_dialogs_ = value;
+            }
         }
 
         // this includes all drives, even the internal ones
