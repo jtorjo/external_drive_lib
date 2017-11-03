@@ -217,7 +217,6 @@ namespace console_test
             var dest_win = new_temp_path();
             var dest_android = android_prefix + ":/phone/dcim/bulk";
             int i = 0;
-            #if old_code
             // take "even" files
             var src_files_win = drive_root.inst.parse_folder(src_win).files.Where(f => i++ % 2 == 0).ToList();
             var src_files_size = src_files_win.Sum(f => f.size);
@@ -230,7 +229,6 @@ namespace console_test
             bulk.bulk_copy_sync(src_files_win, dest_android);
             var dest_android_size = drive_root.inst.parse_folder(dest_android).files.Sum(f => f.size);
             Debug.Assert(dest_android_size == src_files_size);
-            #endif
 
             // android to android
             i = 0;
@@ -265,8 +263,8 @@ namespace console_test
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
             //android_test_parse_files();
             //android_test_parent_folder();
+//            test_folderitems.test_android_folderitems3();
             test_bulk_copy();
-            return;
 
             android_test_create_delete_folder();
 

@@ -73,7 +73,7 @@ namespace external_drive_lib.bulk
             if (dest_folder is android_folder)
                 dest_parent_shell_folder = (dest_folder as android_folder).raw_folder_item().GetFolder as Folder;
             else if (dest_folder is win_folder) 
-                dest_parent_shell_folder = win_util.get_shell32_folder((dest_parent_shell_folder as win_folder).full_path);                
+                dest_parent_shell_folder = win_util.get_shell32_folder((dest_folder as win_folder).full_path);                
             else 
                 Debug.Assert(false);
 
@@ -94,11 +94,16 @@ namespace external_drive_lib.bulk
                 var src_items = src_parent_shell_folder.Items() as FolderItems3;
                 // here, we filter only those files that you want from the source folder 
                 src_items.Filter(int.MaxValue & ~0x8000, filter_spec);
-                if (src_items.Count != f.Value.Count)
-                    logger.Warn("expected to copy " + f.Value.Count + " files, but filer got " + src_items + " on path " + f.Key);
                 // ... they're ignored, but still :)
                 var copy_options = 4 | 16 | 512 | 1024;
-                dest_parent_shell_folder.CopyHere(src_items, copy_options);
+                if (src_items.Count == f.Value.Count) 
+                    dest_parent_shell_folder.CopyHere(src_items, copy_options);
+                else {
+                    // "amazing" - for Android, the filter spec doesn't work - we need to copy each of them separately
+                    Debug.Assert(f.Value[0] is android_file);
+                    foreach ( var file in f.Value)
+                        dest_parent_shell_folder.CopyHere((file as android_file).raw_folder_item(), copy_options);
+                }
 
                 if ( synchronous)
                     wait_for_copy_complete(f.Value, dest_folder_name);
