@@ -77,8 +77,14 @@ namespace external_drive_lib.windows
         public static void wait_for_android_copy_complete(string full_file_name, long size) {
             long last_size = -1;
             // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
+            const int max_rety = 25;
+            const int max_rety_first_time = 100;
+            // the copy process can take a while to start...
+            last_size = wait_for_android_file_size(full_file_name, size, max_rety_first_time);
+            if ( last_size < 0)
+                throw new exception("File may have not been copied - " + full_file_name + " got -1, expected " + size);
             while (last_size < size) {
-                var cur_size = wait_for_android_file_size(full_file_name, size, 25);
+                var cur_size = wait_for_android_file_size(full_file_name, size, max_rety);
                 if ( cur_size == last_size)
                     throw new exception("File may have not been copied - " + full_file_name + " got " + cur_size + ", expected " + size);
                 last_size = cur_size;

@@ -23,7 +23,7 @@ namespace external_drive_lib.android
         }
 
         // for android_folder.copy
-        internal FolderItem2 folder_item() {
+        internal FolderItem2 raw_folder_item() {
             return fi_;
         }
 

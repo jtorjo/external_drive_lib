@@ -24,3 +24,5 @@ readme + licensing
 todo:
 make it work for all external drives (even CDroms etc)
 implement move()
+
+implement copy on folders

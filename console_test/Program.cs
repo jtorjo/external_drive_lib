@@ -7,7 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib;
+using external_drive_lib.bulk;
 using external_drive_lib.interfaces;
+using external_drive_lib.raw_tests;
 
 namespace console_test
 {
@@ -210,6 +212,49 @@ namespace console_test
             drive_root.inst.parse_file(android_prefix + ":/phone/dcim/" + src_file.name + ".renamed").delete_sync();
         }
 
+        static void test_bulk_copy() {
+            var src_win = "D:\\cool_pics\\a00\\b0\\c0";
+            var dest_win = new_temp_path();
+            var dest_android = android_prefix + ":/phone/dcim/bulk";
+            int i = 0;
+            #if old_code
+            // take "even" files
+            var src_files_win = drive_root.inst.parse_folder(src_win).files.Where(f => i++ % 2 == 0).ToList();
+            var src_files_size = src_files_win.Sum(f => f.size);
+            // win to win
+            bulk.bulk_copy_sync(src_files_win, dest_win);
+            var dest_win_size = drive_root.inst.parse_folder(dest_win).files.Sum(f => f.size);
+            Debug.Assert(dest_win_size == src_files_size);
+
+            // win to android
+            bulk.bulk_copy_sync(src_files_win, dest_android);
+            var dest_android_size = drive_root.inst.parse_folder(dest_android).files.Sum(f => f.size);
+            Debug.Assert(dest_android_size == src_files_size);
+            #endif
+
+            // android to android
+            i = 0;
+            var dest_android_copy = android_prefix + ":/phone/dcim/bulk_copy";
+            var src_files_android = drive_root.inst.parse_folder(dest_android).files.Where(f => i++ % 2 == 0).ToList();
+            var src_files_android_size = src_files_android.Sum(f => f.size);
+            bulk.bulk_copy_sync(src_files_android, dest_android_copy);
+            var dest_files_android_size = drive_root.inst.parse_folder(dest_android_copy).files.Sum(f => f.size);
+            Debug.Assert(src_files_android_size == dest_files_android_size);
+
+            // android to win
+            var dest_win_copy = new_temp_path();
+            bulk.bulk_copy_sync(src_files_android, dest_win_copy);
+            var dest_win_copy_size = drive_root.inst.parse_folder(dest_win_copy).files.Sum(f => f.size);
+            Debug.Assert(dest_win_copy_size == src_files_android_size);
+
+            drive_root.inst.parse_folder(dest_win).delete_sync();
+            drive_root.inst.parse_folder(dest_win_copy).delete_sync();
+
+            drive_root.inst.parse_folder(dest_android).delete_sync();
+            drive_root.inst.parse_folder(dest_android_copy).delete_sync();
+        }
+
+
         static void Main(string[] args)
         {
             //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
@@ -220,6 +265,9 @@ namespace console_test
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
             //android_test_parse_files();
             //android_test_parent_folder();
+            test_bulk_copy();
+            return;
+
             android_test_create_delete_folder();
 
             android_test_copy_and_delete_file();

@@ -93,7 +93,7 @@ namespace external_drive_lib.windows
                 if (File.Exists(dest_path))
                     File.Delete(dest_path);
                 var shell_folder = win_util.get_shell32_folder(fn);
-                shell_folder.CopyHere(andoid.folder_item(), copy_options);
+                shell_folder.CopyHere(andoid.raw_folder_item(), copy_options);
                 if ( synchronous)
                     win_util.wait_for_win_copy_complete(file.size, dest_path);
             }

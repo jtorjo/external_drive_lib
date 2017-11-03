@@ -45,6 +45,11 @@ namespace external_drive_lib.android
             }
         }
 
+        // for bulk copy
+        public FolderItem raw_folder_item() {
+            return fi_;
+        }
+
         public string full_path {
             get {
                 return drive_.parse_android_path(fi_);
@@ -96,7 +101,7 @@ namespace external_drive_lib.android
             FolderItem dest_item = null;
             var souce_name = file.name;
             if (andoid != null) 
-                dest_item = andoid.folder_item();
+                dest_item = andoid.raw_folder_item();
             else if (win != null) {
                 var win_file_name = new FileInfo(win.full_path);
 
