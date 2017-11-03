@@ -255,13 +255,20 @@ namespace console_test
 
         static void test_android_disconnected() {
             var camera = "[a0]:/phone/dcim/camera";
+            var camera_folder = drive_root.inst.parse_folder(camera);
             var first_file = drive_root.inst.parse_folder(camera).files.ToList()[0];
+            Debug.Assert(camera_folder.exists);
+            Debug.Assert(first_file.exists);
+            Debug.Assert(first_file.drive.is_connected());
+            Debug.Assert(camera_folder.drive.is_connected());
+
             logger.Debug("camera file " + first_file.size);
             logger.Debug("Disconnect the phone now.");
             Console.ReadLine();
-            var exists = first_file.exists;
-            logger.Debug("file still exists " + exists);
-
+            Debug.Assert(!camera_folder.exists);
+            Debug.Assert(!first_file.exists);
+            Debug.Assert(!first_file.drive.is_connected());
+            Debug.Assert(!camera_folder.drive.is_connected());
         }
 
         private static void print_device_properties(Dictionary<string, string> properties, string prefix) {
@@ -284,9 +291,8 @@ namespace console_test
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
             logger.Debug("test started");
 
-            test_long_android_copy("[a0]:/phone/dcim/camera/20171017_195655.mp4");
             test_android_disconnected();
-            return;
+            test_long_android_copy("[a0]:/phone/dcim/camera/20171017_195655.mp4");
 
             test_bulk_copy();
 

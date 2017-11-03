@@ -23,3 +23,7 @@ use real unique_id + galaxy s6 is friendly name
 use [a0] for first android drive
 [dX] for drive idx
 
+1.0.1h
+see if android_file.exists actually works /same for android_folder and  android_drive.connected
+
+

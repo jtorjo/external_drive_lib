@@ -36,13 +36,14 @@ namespace external_drive_lib.android
         public bool exists {
             get {
                 try {
-                    if (drive.is_connected())
+                    if (drive.is_connected()) {
                         // if this throws, drive exists, but folder does not
                         drive_root.inst.parse_folder(full_path);
-                    return true;
+                        return true;
+                    }
                 } catch {
-                    return false;
                 }
+                return false;
             }
         }
 
