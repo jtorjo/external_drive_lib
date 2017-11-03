@@ -19,4 +19,7 @@ if autorefresh -> update android drives on add/delete; actually -> autorefresh a
 refresh() -> for android drives check "connected_via_usb", reuse what possible
 use real unique_id + galaxy s6 is friendly name
 
+1.0.1g
+use [a0] for first android drive
+[dX] for drive idx
 

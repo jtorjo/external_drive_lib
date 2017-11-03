@@ -1,5 +1,4 @@
-﻿use [a0] for first android drive
-
+﻿
 see if android_file.exists actually works /same for android_folder and  android_drive.connected
 
 

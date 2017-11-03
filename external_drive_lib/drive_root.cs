@@ -151,14 +151,14 @@ namespace external_drive_lib
         public void refresh() {
             List<IDrive> drives_now = new List<IDrive>();
             try {
-                drives_now.AddRange(get_android_drives());
-            } catch (Exception e) {
-                logger.Error("error getting android drives " + e);
-            }
-            try {
                 drives_now.AddRange(get_win_drives());
             } catch (Exception e) {
                 logger.Error("error getting win drives " + e);
+            }
+            try {
+                drives_now.AddRange(get_android_drives());
+            } catch (Exception e) {
+                logger.Error("error getting android drives " + e);
             }
             var external = drives_now.Where(d => d.type != drive_type.hdd).ToList();
             lock (this) {
@@ -175,20 +175,45 @@ namespace external_drive_lib
                         ad.unique_id = vidpid_to_unique_id_[ad.vid_pid];
         }
 
-        public IDrive try_get_drive(string unique_id_or_drive_id) {
+        // As drive name, use any of: "{<unique_id>}:", "<drive-name>:", "[a<android-drive-index>]:", "[d<drive-index>]:"
+        public IDrive try_get_drive(string drive_prefix) {
             // case insensitive
             foreach ( var d in all_drives)
-                if (string.Compare(d.root_name, unique_id_or_drive_id, StringComparison.CurrentCultureIgnoreCase) == 0 ||
-                    string.Compare("{" + d.unique_id + "}:\\", unique_id_or_drive_id, StringComparison.CurrentCultureIgnoreCase) == 0)
+                if (string.Compare(d.root_name, drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0 ||
+                    string.Compare("{" + d.unique_id + "}:\\", drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0)
                     return d;
+
+            if (drive_prefix.StartsWith("[") && drive_prefix.EndsWith("]:\\")) {
+                drive_prefix = drive_prefix.Substring(1, drive_prefix.Length - 4);
+                if (drive_prefix.StartsWith("d", StringComparison.CurrentCultureIgnoreCase)) {
+                    // d<drive-index>
+                    drive_prefix = drive_prefix.Substring(1);
+                    var idx = 0;
+                    if (int.TryParse(drive_prefix, out idx)) {
+                        var all = all_drives;
+                        if (all.Count > idx)
+                            return all[idx];
+                    }
+                }
+                else if (drive_prefix.StartsWith("a", StringComparison.CurrentCultureIgnoreCase)) {
+                    drive_prefix = drive_prefix.Substring(1);
+                    var idx = 0;
+                    if (int.TryParse(drive_prefix, out idx)) {
+                        var android = all_drives.Where(d => d is android_drive).ToList();
+                        if (android.Count > idx)
+                            return android[idx];
+                    }                    
+                }
+            }
+
             return null;
         }
         // throws if drive not found
-        public IDrive get_drive(string unique_id_or_drive_id) {
+        public IDrive get_drive(string drive_prefix) {
             // case insensitive
-            var d = try_get_drive(unique_id_or_drive_id);
+            var d = try_get_drive(drive_prefix);
             if ( d == null)
-                throw new exception("invalid drive " + unique_id_or_drive_id);
+                throw new exception("invalid drive " + drive_prefix);
             return d;
         }
 
