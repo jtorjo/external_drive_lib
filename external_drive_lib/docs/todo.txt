@@ -4,7 +4,7 @@
 
 
 android -> has directory called "Android" => parse drive/first_dir/<Android>
-
+"*" -> single folder
 
 
 

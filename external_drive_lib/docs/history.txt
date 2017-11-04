@@ -29,3 +29,7 @@ see if android_file.exists actually works /same for android_folder and  android_
 1.0.1i
 android -> portable
 
+1.0.1j
+parse_file/folder_name -> parse_file/folder
+
+

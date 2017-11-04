@@ -64,8 +64,8 @@ namespace external_drive_lib.interfaces
         IEnumerable<IFolder> folders { get; }
         IEnumerable<IFile> files { get; }
 
-        IFile parse_file_name(string path);
-        IFolder parse_folder_name(string path);
+        IFile parse_file(string path);
+        IFolder parse_folder(string path);
 
         // creates the full path to the folder
         IFolder create_folder(string folder);

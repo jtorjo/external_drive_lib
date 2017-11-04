@@ -245,7 +245,7 @@ namespace external_drive_lib
             if ( drive_str == null)
                 throw new exception("invalid path " + path);
             var drive = get_drive(drive_str);
-            return drive.parse_file_name(folder_or_file);
+            return drive.parse_file(folder_or_file);
         }
 
         // throws if anything goes wrong
@@ -255,7 +255,7 @@ namespace external_drive_lib
             if ( drive_str == null)
                 throw new exception("invalid path " + path);
             var drive = get_drive(drive_str);
-            return drive.parse_folder_name(folder_or_file);
+            return drive.parse_folder(folder_or_file);
         }
 
         // creates all folders up to the given path

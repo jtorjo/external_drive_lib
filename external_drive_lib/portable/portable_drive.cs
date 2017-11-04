@@ -139,7 +139,7 @@ namespace external_drive_lib.portable
             return cur_folder_item;
         }
 
-        public IFile parse_file_name(string path) {
+        public IFile parse_file(string path) {
             var unique_drive_id = "{" + unique_id + "}";
             if (path.StartsWith(unique_drive_id, StringComparison.CurrentCultureIgnoreCase))
                 path = path.Substring(unique_drive_id.Length + 2); // ignore ":\" as well
@@ -165,7 +165,7 @@ namespace external_drive_lib.portable
             return new portable_file(this, file as FolderItem2);
         }
 
-        public IFolder parse_folder_name(string path) {
+        public IFolder parse_folder(string path) {
             path = path.Replace("/", "\\");
             if (path.EndsWith("\\"))
                 path = path.Substring(0, path.Length - 1);
