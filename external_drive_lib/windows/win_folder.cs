@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
+using external_drive_lib.portable;
 using Shell32;
 
 namespace external_drive_lib.windows
@@ -73,7 +74,7 @@ namespace external_drive_lib.windows
 
         public void copy_file(IFile file, bool synchronous) {
             var copy_options = 4 | 16 | 512 | 1024;
-            var andoid = file as android_file;
+            var andoid = file as portable_file;
             var win = file as win_file;
             // it can either be android or windows
             Debug.Assert(andoid != null || win != null);

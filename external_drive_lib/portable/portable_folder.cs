@@ -1,30 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
-using external_drive_lib.exceptions;
+using external_drive_lib.android;
 using external_drive_lib.interfaces;
 using external_drive_lib.windows;
 using Shell32;
 
-namespace external_drive_lib.android
+namespace external_drive_lib.portable
 {
     // https://blog.dotnetframework.org/2014/12/10/read-extended-properties-of-a-file-in-c/ -> this gets properties of a folder
 
-    internal class android_folder : IFolder2 {
+    internal class portable_folder : IFolder2 {
 
         private FolderItem fi_;
-        private android_drive drive_;
+        private portable_drive drive_;
 
         private bool enumerated_children_ = false;
         private List<IFolder> folders_ = new List<IFolder>();
         private List<IFile> files_ = new List<IFile>();
 
-        public android_folder(android_drive drive,FolderItem fi) {
+        public portable_folder(portable_drive drive,FolderItem fi) {
             drive_ = drive;
             fi_ = fi;
             Debug.Assert(fi.IsFolder);
@@ -61,7 +57,7 @@ namespace external_drive_lib.android
             get { return drive_; }
         }
 
-        public IFolder parent => new android_folder(drive_, (fi_.Parent as Folder2).Self);
+        public IFolder parent => new portable_folder(drive_, (fi_.Parent as Folder2).Self);
 
         public IEnumerable<IFile> files {
             get {
@@ -96,7 +92,7 @@ namespace external_drive_lib.android
 
         public void copy_file(IFile file, bool synchronous) {
             var copy_options = 4 | 16 | 512 | 1024 ;
-            var andoid = file as android_file;
+            var andoid = file as portable_file;
             var win = file as win_file;
             // it can either be android or windows
             Debug.Assert(andoid != null || win != null);

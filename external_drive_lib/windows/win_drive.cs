@@ -35,7 +35,7 @@ namespace external_drive_lib.windows
         }
 
         public drive_type type {
-            get { return drive_type.hdd; }
+            get { return drive_type.internal_hdd; }
         }
 
         public string root_name {

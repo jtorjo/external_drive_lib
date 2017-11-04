@@ -3,7 +3,7 @@
 
 
 
-
+android -> has directory called "Android" => parse drive/first_dir/<Android>
 
 
 
@@ -15,6 +15,10 @@ readme + licensing
 
 
 explain:
+
+unique-id
+portable drive
+sync/async
 about bulk copy
 about drive connected
 about hiding progress windows

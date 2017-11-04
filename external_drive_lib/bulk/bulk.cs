@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using external_drive_lib.android;
 using external_drive_lib.interfaces;
+using external_drive_lib.portable;
 using external_drive_lib.windows;
 using Shell32;
 
@@ -70,8 +71,8 @@ namespace external_drive_lib.bulk
             // here, we know the source or dest or both are android
 
             Folder dest_parent_shell_folder = null;
-            if (dest_folder is android_folder)
-                dest_parent_shell_folder = (dest_folder as android_folder).raw_folder_item().GetFolder as Folder;
+            if (dest_folder is portable_folder)
+                dest_parent_shell_folder = (dest_folder as portable_folder).raw_folder_item().GetFolder as Folder;
             else if (dest_folder is win_folder) 
                 dest_parent_shell_folder = win_util.get_shell32_folder((dest_folder as win_folder).full_path);                
             else 
@@ -84,8 +85,8 @@ namespace external_drive_lib.bulk
                 string filter_spec = f.Value.Count == src_parent_file_count ? "*.*" : string.Join(";", f.Value.Select(n => n.name));
 
                 Folder src_parent_shell_folder = null;
-                if (src_parent is android_folder)
-                    src_parent_shell_folder = (src_parent as android_folder).raw_folder_item().GetFolder as Folder;
+                if (src_parent is portable_folder)
+                    src_parent_shell_folder = (src_parent as portable_folder).raw_folder_item().GetFolder as Folder;
                 else if (src_parent is win_folder) 
                     src_parent_shell_folder = win_util.get_shell32_folder((src_parent as win_folder).full_path);                
                 else 
@@ -100,9 +101,9 @@ namespace external_drive_lib.bulk
                     dest_parent_shell_folder.CopyHere(src_items, copy_options);
                 else {
                     // "amazing" - for Android, the filter spec doesn't work - we need to copy each of them separately
-                    Debug.Assert(f.Value[0] is android_file);
+                    Debug.Assert(f.Value[0] is portable_file);
                     foreach ( var file in f.Value)
-                        dest_parent_shell_folder.CopyHere((file as android_file).raw_folder_item(), copy_options);
+                        dest_parent_shell_folder.CopyHere((file as portable_file).raw_folder_item(), copy_options);
                 }
 
                 if ( synchronous)
@@ -113,7 +114,7 @@ namespace external_drive_lib.bulk
         private static void wait_for_copy_complete(List<IFile> src_files, string dest_folder_name) {
             Debug.Assert(src_files.Count > 0);
             var dest_folder = drive_root.inst.parse_folder(dest_folder_name);
-            var dest_android = dest_folder is android_folder;
+            var dest_android = dest_folder is portable_folder;
             var dest_win = dest_folder is win_folder;
             Debug.Assert(dest_android || dest_win);
 

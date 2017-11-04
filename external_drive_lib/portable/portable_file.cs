@@ -1,22 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using external_drive_lib.windows;
 using Shell32;
 
-namespace external_drive_lib.android
+namespace external_drive_lib.portable
 {
-    internal class android_file : IFile
+    internal class portable_file : IFile
     {
         private FolderItem2 fi_;
-        private android_drive drive_;
-        public android_file(android_drive drive, FolderItem2 fi) {
+        private portable_drive drive_;
+        public portable_file(portable_drive drive, FolderItem2 fi) {
             drive_ = drive;
             fi_ = fi;
             Debug.Assert(!fi.IsFolder);
@@ -29,7 +26,7 @@ namespace external_drive_lib.android
 
         public string name => fi_.Name;
 
-        public IFolder folder => new android_folder(drive_, (fi_.Parent as Folder2).Self);
+        public IFolder folder => new portable_folder(drive_, (fi_.Parent as Folder2).Self);
 
         public string full_path => drive_.parse_android_path(fi_);
 

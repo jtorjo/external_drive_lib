@@ -45,9 +45,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="android\android_drive.cs" />
-    <Compile Include="android\android_file.cs" />
-    <Compile Include="android\android_folder.cs" />
+    <Compile Include="portable\portable_drive.cs" />
+    <Compile Include="portable\portable_file.cs" />
+    <Compile Include="portable\portable_folder.cs" />
     <Compile Include="util\android_util.cs" />
     <Compile Include="bulk\bulk.cs" />
     <Compile Include="drive_root.cs" />

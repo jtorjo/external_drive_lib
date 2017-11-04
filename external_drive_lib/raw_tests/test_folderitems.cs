@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using external_drive_lib.android;
+using external_drive_lib.portable;
 using external_drive_lib.windows;
 using Shell32;
 
@@ -36,7 +37,7 @@ namespace external_drive_lib.raw_tests
 
         public static void test_android_folderitems3() {
             const string android_prefix = "{galaxy s6}";
-            var dir = (drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/bulk") as android_folder).raw_folder_item().GetFolder as Folder3;
+            var dir = (drive_root.inst.parse_folder(android_prefix + ":/phone/dcim/bulk") as portable_folder).raw_folder_item().GetFolder as Folder3;
             IShellFolderViewDual vd = dir as IShellFolderViewDual;
             var items = dir.Items() as FolderItems3;
             foreach ( FolderItemVerb v in items.Verbs)

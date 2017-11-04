@@ -10,6 +10,7 @@ using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using external_drive_lib.monitor;
+using external_drive_lib.portable;
 using external_drive_lib.util;
 using external_drive_lib.windows;
 using Shell32;
@@ -90,7 +91,7 @@ namespace external_drive_lib
                     refresh_android_unique_ids();
                     var already_a_drive = false;
                     lock (this) {
-                        var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as android_drive;
+                        var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
                         if (ad != null) {
                             ad.connected_via_usb = true;
                             already_a_drive = true;
@@ -108,7 +109,7 @@ namespace external_drive_lib
         private void monitor_for_drive(string vidpid, int idx) {
             const int MAX_RETRIES = 10;
             var drives_now = get_android_drives();
-            var found = drives_now.FirstOrDefault(d => (d as android_drive).vid_pid == vidpid);
+            var found = drives_now.FirstOrDefault(d => (d as portable_drive).vid_pid == vidpid);
             if (found != null) 
                 refresh();
             else if ( idx < MAX_RETRIES)
@@ -123,7 +124,7 @@ namespace external_drive_lib
                 string vid_pid = "", unique_id = "";
                 if (pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
                     lock (this) {
-                        var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as android_drive;
+                        var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
                         if (ad != null)
                             ad.connected_via_usb = false;                        
                     }
@@ -160,7 +161,7 @@ namespace external_drive_lib
             } catch (Exception e) {
                 logger.Error("error getting android drives " + e);
             }
-            var external = drives_now.Where(d => d.type != drive_type.hdd).ToList();
+            var external = drives_now.Where(d => d.type != drive_type.internal_hdd).ToList();
             lock (this) {
                 drives_ = drives_now;
                 external_drives_ = external;
@@ -170,7 +171,7 @@ namespace external_drive_lib
 
         private void refresh_android_unique_ids() {
             lock(this)
-                foreach ( android_drive ad in drives_.OfType<android_drive>())
+                foreach ( portable_drive ad in drives_.OfType<portable_drive>())
                     if ( vidpid_to_unique_id_.ContainsKey(ad.vid_pid))
                         ad.unique_id = vidpid_to_unique_id_[ad.vid_pid];
         }
@@ -199,7 +200,16 @@ namespace external_drive_lib
                     drive_prefix = drive_prefix.Substring(1);
                     var idx = 0;
                     if (int.TryParse(drive_prefix, out idx)) {
-                        var android = all_drives.Where(d => d is android_drive).ToList();
+                        var android = all_drives.Where(d => d.type.is_android()).ToList();
+                        if (android.Count > idx)
+                            return android[idx];
+                    }                    
+                }
+                else if (drive_prefix.StartsWith("p", StringComparison.CurrentCultureIgnoreCase)) {
+                    drive_prefix = drive_prefix.Substring(1);
+                    var idx = 0;
+                    if (int.TryParse(drive_prefix, out idx)) {
+                        var android = all_drives.Where(d => d.type.is_portable()).ToList();
                         if (android.Count > idx)
                             return android[idx];
                     }                    
@@ -278,10 +288,10 @@ namespace external_drive_lib
         }
 
         private List<IDrive> get_android_drives() {
-            var new_drives = get_android_connected_device_drives().Select(d => new android_drive(d) as IDrive).ToList();
+            var new_drives = get_android_connected_device_drives().Select(d => new portable_drive(d) as IDrive).ToList();
             List<IDrive> old_drives = null;
             lock (this)
-                old_drives = drives_.Where(d => d is android_drive).ToList();
+                old_drives = drives_.Where(d => d is portable_drive).ToList();
 
             // if we already have this drive, reuse that
             List<IDrive> result = new List<IDrive>();

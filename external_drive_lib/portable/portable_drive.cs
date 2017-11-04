@@ -2,16 +2,14 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using Shell32;
 
-namespace external_drive_lib.android
+namespace external_drive_lib.portable
 {
-    internal class android_drive : IDrive {
+    internal class portable_drive : IDrive {
         private const int RETRY_TIMES = 5;
         private const int SLEEP_BEFORE_RETRY_MS = 200;
 
@@ -31,7 +29,7 @@ namespace external_drive_lib.android
 
         private bool connected_via_usb_ = true;
 
-        public android_drive(FolderItem fi) {
+        public portable_drive(FolderItem fi) {
             root_ = fi;
             friendly_name_ = root_.Name;
             root_path_ = root_.Path;
@@ -164,7 +162,7 @@ namespace external_drive_lib.android
             #endif
             if ( file == null)
                 throw new exception("invalid path " + path);
-            return new android_file(this, file as FolderItem2);
+            return new portable_file(this, file as FolderItem2);
         }
 
         public IFolder parse_folder_name(string path) {
@@ -181,7 +179,7 @@ namespace external_drive_lib.android
             var raw_folder = parse_sub_folder(sub_folder_names);
             if (raw_folder == null)
                 throw new exception("invalid path " + path);
-            return new android_folder(this, raw_folder);
+            return new portable_folder(this, raw_folder);
         }
 
         public string parse_android_path(FolderItem fi) {
@@ -232,7 +230,7 @@ namespace external_drive_lib.android
                 cur = sub;
             }
 
-            return new android_folder(this, cur);
+            return new portable_folder(this, cur);
         }
     }
 }
