@@ -4,14 +4,9 @@
 
 
 android -> has directory called "Android" => parse drive/first_dir/<Android>
-"*" -> single folder
 
-
-
-
-
-
-readme + licensing
+https://www.codeproject.com/script/Articles/ArticleVersion.aspx?waid=249874&aid=1213684
+readme on github
 
 
 

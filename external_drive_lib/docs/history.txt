@@ -32,4 +32,6 @@ android -> portable
 1.0.1j
 parse_file/folder_name -> parse_file/folder
 
+1.0.1k
+"*" -> single folder
 

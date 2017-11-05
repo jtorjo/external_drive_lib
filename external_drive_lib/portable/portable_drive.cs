@@ -122,19 +122,23 @@ namespace external_drive_lib.portable
         private FolderItem parse_sub_folder(IEnumerable<string> sub_folder_path) {
             var cur_folder = root_.GetFolder as Folder;
             var cur_folder_item = root_;
+            var idx = 0;
             foreach (var sub in sub_folder_path) {
-                // sometimes this returns null even if we have the folder - I've seen this when copying from windows to android (bulk copy)
-                var sub_folder = cur_folder.ParseName(sub);
-                #if old_code
-                for (int retry = 0; retry < RETRY_TIMES && sub_folder == null; retry++) {
-                    Thread.Sleep(SLEEP_BEFORE_RETRY_MS);
-                    sub_folder = cur_folder.ParseName(sub);
+                if (idx == 0 && sub == "*") {
+                    // special case - replace with single root folder
+                    var sub_items = cur_folder.Items();
+                    if (sub_items.Count == 1 && sub_items.Item(0).IsFolder) 
+                        cur_folder = sub_items.Item(0).GetFolder as Folder;
+                    else 
+                        throw new exception("Root drive doesn't have a single root folder (*)");
+                } else {
+                    var sub_folder = cur_folder.ParseName(sub);
+                    if (sub_folder == null)
+                        return null;
+                    cur_folder_item = sub_folder;
+                    cur_folder = cur_folder_item.GetFolder as Folder;
                 }
-                #endif
-                if (sub_folder == null)
-                    return null;
-                cur_folder_item = sub_folder;
-                cur_folder = cur_folder_item.GetFolder as Folder;
+                ++idx;
             }
             return cur_folder_item;
         }
@@ -153,13 +157,6 @@ namespace external_drive_lib.portable
             if (raw_folder == null)
                 throw new exception("invalid path " + path);
             var file = (raw_folder.GetFolder as Folder).ParseName(file_name);
-            #if old_code
-            // sometimes this returns null even if we have the folder - I've seen this when copying from android to windows
-            for (int retry = 0; retry < RETRY_TIMES && file == null; retry++) {
-                Thread.Sleep(SLEEP_BEFORE_RETRY_MS);
-                file = (raw_folder.GetFolder as Folder).ParseName(file_name);
-            }
-            #endif
             if ( file == null)
                 throw new exception("invalid path " + path);
             return new portable_file(this, file as FolderItem2);

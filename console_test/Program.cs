@@ -81,34 +81,36 @@ namespace console_test
         // Android tests
 
         static void android_test_parse_files() {
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/camera/20171005_121557.jPg").size == 4598747);
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/camera/20171005_121601.jPg").size == 3578988);
-            Debug.Assert(drive_root.inst.parse_folder("[a0]:/phone/dcim/camera") != null);
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").size == 4598747);
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121601.jPg").size == 3578988);
+            Debug.Assert(drive_root.inst.parse_folder("[a0]:/*/dcim/camera") != null);
 
-            Debug.Assert(drive_root.inst.parse_folder("[a0]:/phone/dcim/camera").full_path.ToLower() == "[a0]:/phone\\dcim\\camera");
-
+//            Debug.Assert(drive_root.inst.parse_folder("[a0]:/*/dcim/camera").full_path.ToLower() == "[a0]:/*\\dcim\\camera");
         }
 
         static void android_test_parent_folder() {
-            // ... uses file.parent
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/camera/20171005_121557.jPg").folder.full_path.ToLower() 
-                         == "[a0]:/phone\\dcim\\camera");
-            // ... uses file.parent and folder.parent
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/camera/20171005_121557.jPg").folder.parent.full_path.ToLower() 
-                         == "[a0]:/phone\\dcim");
+            // need to care about [a0] in full_path
+            Debug.Assert(false);
 
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/camera/20171005_121557.jPg").full_path.ToLower() 
-                         == "[a0]:/phone\\dcim\\camera\\20171005_121557.jpg");
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/camera/20171005_121601.jPg").full_path.ToLower() 
-                         == "[a0]:/phone\\dcim\\camera\\20171005_121601.jpg");            
+            // ... uses file.parent
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").folder.full_path.ToLower() 
+                         == "[a0]:/*\\dcim\\camera");
+            // ... uses file.parent and folder.parent
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").folder.parent.full_path.ToLower() 
+                         == "[a0]:/*\\dcim");
+
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").full_path.ToLower() 
+                         == "[a0]:/*\\dcim\\camera\\20171005_121557.jpg");
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121601.jPg").full_path.ToLower() 
+                         == "[a0]:/*\\dcim\\camera\\20171005_121601.jpg");            
 
         }
 
         static void android_test_create_delete_folder() {
-            Debug.Assert(drive_root.inst.new_folder("[a0]:/phone/dcim/testing123") != null);
-            drive_root.inst.parse_folder("[a0]:/phone/dcim/testing123").delete_sync();
+            Debug.Assert(drive_root.inst.new_folder("[a0]:/*/dcim/testing123") != null);
+            drive_root.inst.parse_folder("[a0]:/*/dcim/testing123").delete_sync();
             try {
-                drive_root.inst.parse_folder("[a0]:/phone/dcim/testing123");
+                drive_root.inst.parse_folder("[a0]:/*/dcim/testing123");
                 Debug.Assert(false);
 
             } catch {
@@ -117,7 +119,7 @@ namespace console_test
         }
 
         static void android_test_copy_and_delete_file() {
-            var camera = drive_root.inst.parse_folder("[a0]:/phone/dcim/camera");
+            var camera = drive_root.inst.parse_folder("[a0]:/*/dcim/camera");
             var first_file = camera.files.ToList()[0];
             first_file.copy_sync(camera.parent.full_path);
 
@@ -130,8 +132,8 @@ namespace console_test
             // copy: windows to android
             var renamed = dir + "\\" + name + ".renamed.jpg";
             File.Move(dir + "\\" + name, renamed);
-            drive_root.inst.parse_file(renamed).copy_sync("[a0]:/phone/dcim/");
-            Debug.Assert(first_file.size == drive_root.inst.parse_file("[a0]:/phone/dcim/" + name + ".renamed.jpg").size);
+            drive_root.inst.parse_file(renamed).copy_sync("[a0]:/*/dcim/");
+            Debug.Assert(first_file.size == drive_root.inst.parse_file("[a0]:/*/dcim/" + name + ".renamed.jpg").size);
         }
 
 
@@ -143,7 +145,7 @@ namespace console_test
         static void android_test_copy_full_dir_to_windows() {
             DateTime start = DateTime.Now;
             var dest_dir = new_temp_path();
-            var camera = drive_root.inst.parse_folder("[a0]:/phone/dcim/camera");
+            var camera = drive_root.inst.parse_folder("[a0]:/*/dcim/camera");
             foreach (var f in camera.files) {
                 Console.WriteLine(f.name);
                 f.copy_sync(dest_dir);
@@ -195,10 +197,10 @@ namespace console_test
         static void test_copy_files_android_to_win_and_viceversa() {
             // first from android to win, then vice versa
             var temp_dir = new_temp_path();
-            test_copy_files("[a0]:/phone/dcim/facebook", temp_dir);
-            test_copy_files(temp_dir, "[a0]:/phone/dcim/facebook_copy");
+            test_copy_files("[a0]:/*/dcim/facebook", temp_dir);
+            test_copy_files(temp_dir, "[a0]:/*/dcim/facebook_copy");
             drive_root.inst.parse_folder(temp_dir).delete_sync();
-            drive_root.inst.parse_folder("[a0]:/phone/dcim/facebook_copy").delete_sync();            
+            drive_root.inst.parse_folder("[a0]:/*/dcim/facebook_copy").delete_sync();            
         }
 
         static void test_long_android_copy(string file_name) {
@@ -208,15 +210,15 @@ namespace console_test
             var dest_file = temp_dir + "\\" + src_file.name;
             Debug.Assert(src_file.size == drive_root.inst.parse_file(dest_file).size);
             File.Move(dest_file, dest_file + ".renamed");
-            drive_root.inst.parse_file(dest_file + ".renamed").copy_sync("[a0]:/phone/dcim");
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/phone/dcim/" + src_file.name + ".renamed").size == src_file.size);
-            drive_root.inst.parse_file("[a0]:/phone/dcim/" + src_file.name + ".renamed").delete_sync();
+            drive_root.inst.parse_file(dest_file + ".renamed").copy_sync("[a0]:/*/dcim");
+            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/" + src_file.name + ".renamed").size == src_file.size);
+            drive_root.inst.parse_file("[a0]:/*/dcim/" + src_file.name + ".renamed").delete_sync();
         }
 
         static void test_bulk_copy() {
             var src_win = "D:\\cool_pics\\a00\\b0\\c0";
             var dest_win = new_temp_path();
-            var dest_android = "[a0]:/phone/dcim/bulk";
+            var dest_android = "[a0]:/*/dcim/bulk";
             int i = 0;
             // take "even" files
             var src_files_win = drive_root.inst.parse_folder(src_win).files.Where(f => i++ % 2 == 0).ToList();
@@ -233,7 +235,7 @@ namespace console_test
 
             // android to android
             i = 0;
-            var dest_android_copy = "[a0]:/phone/dcim/bulk_copy";
+            var dest_android_copy = "[a0]:/*/dcim/bulk_copy";
             var src_files_android = drive_root.inst.parse_folder(dest_android).files.Where(f => i++ % 2 == 0).ToList();
             var src_files_android_size = src_files_android.Sum(f => f.size);
             bulk.bulk_copy_sync(src_files_android, dest_android_copy);
@@ -254,7 +256,7 @@ namespace console_test
         }
 
         static void test_android_disconnected() {
-            var camera = "[a0]:/phone/dcim/camera";
+            var camera = "[a0]:/*/dcim/camera";
             var camera_folder = drive_root.inst.parse_folder(camera);
             var first_file = drive_root.inst.parse_folder(camera).files.ToList()[0];
             Debug.Assert(camera_folder.exists);
@@ -292,10 +294,10 @@ namespace console_test
 
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
             logger.Debug("test started");
-            test_folderitems.test_long_android_copy_async("[a0]:/phone/dcim/camera/20171017_195655.mp4");
+            test_folderitems.test_long_android_copy_async("[a0]:/*/dcim/camera/20171017_195655.mp4");
 
             test_android_disconnected();
-            test_long_android_copy("[a0]:/phone/dcim/camera/20171017_195655.mp4");
+            test_long_android_copy("[a0]:/*/dcim/camera/20171017_195655.mp4");
 
             test_bulk_copy();
 
