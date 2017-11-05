@@ -47,18 +47,35 @@ namespace external_drive_lib.portable
         }
 
         private void find_drive_type() {
-            drive_type_ = drive_type.android;
-            if (root_.IsFolder) {
-                var items = (root_.GetFolder as Folder).Items();
-                if (items.Count == 1) {
-                    var child = items.Item(0) as FolderItem;
-                    if (child.IsFolder) {
-                        if (child.Name == "Phone")
-                            drive_type_ = drive_type.android_phone;
-                        else if (child.Name == "Tablet")
-                            drive_type_ = drive_type.android_tablet;
+            drive_type_ = drive_type.portable;
+
+            bool is_android = false, is_phone = false, is_tablet = false;
+
+            try {
+                if (root_.IsFolder) {
+                    var items = (root_.GetFolder as Folder).Items();
+                    if (items.Count == 1) {
+                        var child = items.Item(0) as FolderItem;
+                        var name = child.Name;
+                        if (child.IsFolder) {
+                            if (name == "Phone")
+                                is_phone = true;
+                            else if (name == "Tablet")
+                                is_tablet = true;
+                            // at this point, see if child has a sub-folder called Android
+                            var folder = (child.GetFolder as Folder).ParseName("android");
+                            is_android = folder != null;
+                        }
                     }
                 }
+                if (is_phone)
+                    drive_type_ = is_android ? drive_type.android_phone : drive_type.iphone;
+                else if (is_tablet)
+                    drive_type_ = is_android ? drive_type.android_tablet : drive_type.ipad;
+                else if (is_android)
+                    drive_type_ = drive_type.android;
+            } catch {
+                // just leave drive type as portable
             }
         }
 

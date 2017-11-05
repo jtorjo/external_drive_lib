@@ -35,3 +35,5 @@ parse_file/folder_name -> parse_file/folder
 1.0.1k
 "*" -> single folder
 
+1.0.1m
+android -> has directory called "Android" => parse drive/first_dir/<Android>

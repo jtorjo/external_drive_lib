@@ -16,6 +16,7 @@ namespace external_drive_lib.interfaces
         android_tablet, 
 
         iphone,
+        ipad,
 
         // SD Card
         // FIXME can i know if it's read-only?
