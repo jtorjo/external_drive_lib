@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
+using external_drive_lib.util;
 using Shell32;
 
 namespace external_drive_lib.portable
@@ -90,7 +90,7 @@ namespace external_drive_lib.portable
             get {
                 if (!enumerated_children_) {
                     enumerated_children_ = true;
-                    android_util.enumerate_children(this, root_, folders_, files_);
+                    portable_util.enumerate_children(this, root_, folders_, files_);
                 }
                 return folders_;
             }
@@ -99,7 +99,7 @@ namespace external_drive_lib.portable
             get {
                 if (!enumerated_children_) {
                     enumerated_children_ = true;
-                    android_util.enumerate_children(this, root_, folders_, files_);
+                    portable_util.enumerate_children(this, root_, folders_, files_);
                 }
                 return files_;                
             }

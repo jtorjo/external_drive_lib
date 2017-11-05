@@ -288,8 +288,11 @@ namespace console_test
             //android_test_parse_files();
             //android_test_parent_folder();
 //            test_folderitems.test_android_folderitems3();
+
+
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
             logger.Debug("test started");
+            test_folderitems.test_long_android_copy_async("[a0]:/phone/dcim/camera/20171017_195655.mp4");
 
             test_android_disconnected();
             test_long_android_copy("[a0]:/phone/dcim/camera/20171017_195655.mp4");

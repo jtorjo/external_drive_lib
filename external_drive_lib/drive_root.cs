@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using external_drive_lib.monitor;

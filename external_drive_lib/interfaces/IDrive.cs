@@ -37,7 +37,7 @@ namespace external_drive_lib.interfaces
         }
 
         public static bool is_portable(this drive_type dt) {
-            return dt == drive_type.android || dt == drive_type.android_phone || dt == drive_type.android_tablet;
+            return dt == drive_type.android || dt == drive_type.android_phone || dt == drive_type.android_tablet || dt == drive_type.portable;
         }
 
         public static bool is_iOS(this drive_type dt) {

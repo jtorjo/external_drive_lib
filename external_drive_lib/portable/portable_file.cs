@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
+using external_drive_lib.util;
 using external_drive_lib.windows;
 using Shell32;
 
@@ -48,7 +48,7 @@ namespace external_drive_lib.portable
 
         public long size {
             get {
-                return android_util.android_file_size(fi_);
+                return portable_util.android_file_size(fi_);
             }
         }
 
@@ -80,7 +80,7 @@ namespace external_drive_lib.portable
 
         
         public void delete_async() {
-            Task.Run( () => win_util.delete_sync_android_file(fi_));
+            Task.Run( () => win_util.delete_sync_portable_file(fi_));
         }
 
         public void copy_sync(string dest_path) {
@@ -92,7 +92,7 @@ namespace external_drive_lib.portable
         }
 
         public void delete_sync() {
-            win_util.delete_sync_android_file(fi_);
+            win_util.delete_sync_portable_file(fi_);
         }
     }
 }

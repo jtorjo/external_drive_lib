@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using Shell32;
 
@@ -74,7 +73,7 @@ namespace external_drive_lib.windows
             }
             return cur_size;
         }
-        public static void wait_for_android_copy_complete(string full_file_name, long size) {
+        public static void wait_for_portable_copy_complete(string full_file_name, long size) {
             long last_size = -1;
             // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
             const int max_rety = 25;
@@ -94,7 +93,7 @@ namespace external_drive_lib.windows
 
 
         // note: this can only happen synchronously - otherwise, we'd end up deleting something from HDD before it was fully moved from the HDD
-        public static void delete_sync_android_file(FolderItem fi) {
+        public static void delete_sync_portable_file(FolderItem fi) {
             Debug.Assert( !fi.IsFolder);
             // https://msdn.microsoft.com/en-us/library/windows/desktop/bb787874(v=vs.85).aspx
             var move_options = 4 | 16 | 512 | 1024;
@@ -158,7 +157,7 @@ namespace external_drive_lib.windows
 
 
         // note: this can only happen synchronously - otherwise, we'd end up deleting something from HDD before it was fully moved from the HDD
-        public static void delete_sync_android_folder(FolderItem fi, string old_full_path) {
+        public static void delete_sync_portable_folder(FolderItem fi, string old_full_path) {
             Debug.Assert( fi.IsFolder);
 
             // https://msdn.microsoft.com/en-us/library/windows/desktop/bb787874(v=vs.85).aspx

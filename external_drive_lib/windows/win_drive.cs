@@ -31,7 +31,7 @@ namespace external_drive_lib.windows
         }
 
         public bool is_connected() {
-            return false;
+            return true;
         }
 
         public drive_type type {

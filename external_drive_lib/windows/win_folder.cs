@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using external_drive_lib.android;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
 using external_drive_lib.portable;
@@ -15,6 +14,8 @@ using Shell32;
 namespace external_drive_lib.windows
 {
     class win_folder : IFolder2 {
+        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private string parent_, name_;
         public win_folder(string parent_folder, string folder_name) {
             parent_ = parent_folder;
@@ -95,6 +96,7 @@ namespace external_drive_lib.windows
                     File.Delete(dest_path);
                 var shell_folder = win_util.get_shell32_folder(fn);
                 shell_folder.CopyHere(andoid.raw_folder_item(), copy_options);
+                //logger.Debug("winfolder: CopyHere complete");
                 if ( synchronous)
                     win_util.wait_for_win_copy_complete(file.size, dest_path);
             }

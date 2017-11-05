@@ -14,22 +14,11 @@ android -> has directory called "Android" => parse drive/first_dir/<Android>
 readme + licensing
 
 
-explain:
-
-unique-id
-portable drive
-sync/async
-about bulk copy
-about drive connected
-about hiding progress windows
-about delete by move
-about disconnected, file/folder.exists
-use [a0] for first android drive
-
 
 
 todo:
 make it work for all external drives (even CDroms etc)
 implement move()
-
+the progress dialog -> even if moved away from screen,if the user selects it via taskbar, presses Enter or Esc, it will cancel. i should disable the "cancel" button
 implement copy on folders
+bulk_copy: i should check if destination files exist, and auto-delete them. otherwise, i'll see the awesome "copy and replace" dialog.

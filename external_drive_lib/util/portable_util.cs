@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using external_drive_lib.interfaces;
 using external_drive_lib.portable;
 using Shell32;
 
-namespace external_drive_lib.android
+namespace external_drive_lib.util
 {
-    static class android_util
+    static class portable_util
     {
         private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

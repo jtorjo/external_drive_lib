@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using external_drive_lib.android;
 using external_drive_lib.interfaces;
 using external_drive_lib.portable;
 using external_drive_lib.windows;
@@ -123,7 +122,7 @@ namespace external_drive_lib.bulk
                 if ( dest_win)
                     win_util.wait_for_win_copy_complete(f.size, dest_file);
                 else if ( dest_android)
-                    win_util.wait_for_android_copy_complete(dest_file, f.size);
+                    win_util.wait_for_portable_copy_complete(dest_file, f.size);
                 logger.Debug("bulk " + dest_file);
             }
         }

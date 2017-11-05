@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using external_drive_lib.android;
 using external_drive_lib.interfaces;
+using external_drive_lib.util;
 using external_drive_lib.windows;
 using Shell32;
 
@@ -12,6 +12,7 @@ namespace external_drive_lib.portable
     // https://blog.dotnetframework.org/2014/12/10/read-extended-properties-of-a-file-in-c/ -> this gets properties of a folder
 
     internal class portable_folder : IFolder2 {
+        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private FolderItem fi_;
         private portable_drive drive_;
@@ -28,7 +29,6 @@ namespace external_drive_lib.portable
 
         public string name => fi_.Name;
 
-        // FIXME to test
         public bool exists {
             get {
                 try {
@@ -63,7 +63,7 @@ namespace external_drive_lib.portable
             get {
                 if (!enumerated_children_) {
                     enumerated_children_ = true;
-                    android_util.enumerate_children(drive_, fi_, folders_, files_);
+                    portable_util.enumerate_children(drive_, fi_, folders_, files_);
                 }
                 return files_;
             }
@@ -72,7 +72,7 @@ namespace external_drive_lib.portable
             get {
                 if (!enumerated_children_) {
                     enumerated_children_ = true;
-                    android_util.enumerate_children(drive_, fi_, folders_, files_);
+                    portable_util.enumerate_children(drive_, fi_, folders_, files_);
                 }
                 return folders_;
             }
@@ -81,12 +81,12 @@ namespace external_drive_lib.portable
 
         public void delete_async() {
             var full = full_path;
-            Task.Run( () => win_util.delete_sync_android_folder(fi_, full));
+            Task.Run( () => win_util.delete_sync_portable_folder(fi_, full));
         }
 
         public void delete_sync() {
             var full = full_path;
-            win_util.delete_sync_android_folder(fi_, full);
+            win_util.delete_sync_portable_folder(fi_, full);
         }
 
 
@@ -115,11 +115,12 @@ namespace external_drive_lib.portable
             // so, if file exists, delete it first
             var existing_name = (fi_.GetFolder as Folder).ParseName(souce_name);
             if ( existing_name != null)
-                win_util.delete_sync_android_file(existing_name);
+                win_util.delete_sync_portable_file(existing_name);
 
             (fi_.GetFolder as Folder).CopyHere(dest_item, copy_options);
+            //logger.Debug("portablefolder: CopyHere complete");
             if ( synchronous)
-                win_util.wait_for_android_copy_complete(full_path + "\\" + souce_name, file.size);
+                win_util.wait_for_portable_copy_complete(full_path + "\\" + souce_name, file.size);
         }
 
 
