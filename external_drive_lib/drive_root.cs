@@ -52,11 +52,8 @@ namespace external_drive_lib
         }
 
         // returns all drives, even the internal HDDs - you might need this if you want to copy a file onto an external drive
-        public IReadOnlyList<IDrive> all_drives {
+        public IReadOnlyList<IDrive> drives {
             get { lock(this) return drives_; }
-        }
-        public IReadOnlyList<IDrive> external_drives {
-            get { lock(this) return external_drives_; }
         }
 
         private static bool pnp_device_id_to_vidpid_and_unique_id(string device_id, ref string vid_pid, ref string unique_id) {
@@ -146,7 +143,6 @@ namespace external_drive_lib
 
         // this includes all drives, even the internal ones
         private List<IDrive> drives_ = new List<IDrive>();
-        private List<IDrive> external_drives_ = new List<IDrive>();
 
         public void refresh() {
             List<IDrive> drives_now = new List<IDrive>();
@@ -163,7 +159,6 @@ namespace external_drive_lib
             var external = drives_now.Where(d => d.type != drive_type.internal_hdd).ToList();
             lock (this) {
                 drives_ = drives_now;
-                external_drives_ = external;
             }
             refresh_android_unique_ids();
         }
@@ -178,7 +173,7 @@ namespace external_drive_lib
         // As drive name, use any of: "{<unique_id>}:", "<drive-name>:", "[a<android-drive-index>]:", "[d<drive-index>]:"
         public IDrive try_get_drive(string drive_prefix) {
             // case insensitive
-            foreach ( var d in all_drives)
+            foreach ( var d in drives)
                 if (string.Compare(d.root_name, drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0 ||
                     string.Compare("{" + d.unique_id + "}:\\", drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0)
                     return d;
@@ -190,7 +185,7 @@ namespace external_drive_lib
                     drive_prefix = drive_prefix.Substring(1);
                     var idx = 0;
                     if (int.TryParse(drive_prefix, out idx)) {
-                        var all = all_drives;
+                        var all = drives;
                         if (all.Count > idx)
                             return all[idx];
                     }
@@ -199,7 +194,7 @@ namespace external_drive_lib
                     drive_prefix = drive_prefix.Substring(1);
                     var idx = 0;
                     if (int.TryParse(drive_prefix, out idx)) {
-                        var android = all_drives.Where(d => d.type.is_android()).ToList();
+                        var android = drives.Where(d => d.type.is_android()).ToList();
                         if (android.Count > idx)
                             return android[idx];
                     }                    
@@ -208,7 +203,7 @@ namespace external_drive_lib
                     drive_prefix = drive_prefix.Substring(1);
                     var idx = 0;
                     if (int.TryParse(drive_prefix, out idx)) {
-                        var android = all_drives.Where(d => d.type.is_portable()).ToList();
+                        var android = drives.Where(d => d.type.is_portable()).ToList();
                         if (android.Count > idx)
                             return android[idx];
                     }                    

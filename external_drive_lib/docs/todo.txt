@@ -6,8 +6,6 @@
 
 
 
-
-
 todo:
 make it work for all external drives (even CDroms etc)
 the progress dialog -> even if moved away from screen,if the user selects it via taskbar, presses Enter or Esc, it will cancel. i should disable the "cancel" button
