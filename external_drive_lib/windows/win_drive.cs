@@ -12,7 +12,6 @@ namespace external_drive_lib.windows
     /* note: the main reason we have win drives is so that you can copy from a windows drive to an android drive
      */
     class win_drive : IDrive {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private string root_;
         private bool valid_ = true;
@@ -21,7 +20,7 @@ namespace external_drive_lib.windows
             try {
                 root_ = di.RootDirectory.FullName;
             } catch (Exception e) {
-                logger.Error("bad drive " + di + " : " + e);
+                // "bad drive " + di + " : " + e;
                 valid_ = false;
             }
         }

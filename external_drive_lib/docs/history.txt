@@ -41,3 +41,6 @@ android -> has directory called "Android" => parse drive/first_dir/<Android>
 1.0.1n
 fixed exception found by Dirk Bahle, when rootpath like "::{20D04FE0-3AFA-1069-A2D8-06002B30309D}\\\\\\?\\usb#vid_13d2&pid_0307#557a9de7#{6ad27878-a6fa-4155-ba85-f38f491d4f33}"
 added easy way to test Portable Paths and PNPDeviceIDs
+
+1.0.1o
+removed logging from the lib; 

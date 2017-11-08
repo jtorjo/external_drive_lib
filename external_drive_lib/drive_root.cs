@@ -19,7 +19,6 @@ namespace external_drive_lib
     /* the root - the one that contains all external drives 
      */
     public class drive_root {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static drive_root inst { get; } = new drive_root();
 
@@ -61,11 +60,11 @@ namespace external_drive_lib
             if (properties.ContainsKey("PNPDeviceID")) {
                 var device_id = properties["PNPDeviceID"];
                 string vid_pid = "", unique_id = "";
-                if ( usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
+                if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
                     lock (this) {
                         if (vidpid_to_unique_id_.ContainsKey(vid_pid))
                             vidpid_to_unique_id_[vid_pid] = unique_id;
-                        else 
+                        else
                             vidpid_to_unique_id_.Add(vid_pid, unique_id);
                     }
                     refresh_android_unique_ids();
@@ -77,12 +76,13 @@ namespace external_drive_lib
                             already_a_drive = true;
                         }
                     }
-                    if ( !already_a_drive)
+                    if (!already_a_drive)
                         win_util.postpone(() => monitor_for_drive(vid_pid, 0), 50);
                 }
+            } else {
+                // added usb device with no PNPDeviceID
+                Debug.Assert(false);
             }
-            else 
-                logger.Fatal("added usb device with no PNPDeviceID");
         }
 
         // here, we know the drive was connected, wait a bit until it's actually visible
@@ -92,10 +92,12 @@ namespace external_drive_lib
             var found = drives_now.FirstOrDefault(d => (d as portable_drive).vid_pid == vidpid);
             if (found != null) 
                 refresh();
-            else if ( idx < MAX_RETRIES)
+            else if (idx < MAX_RETRIES)
                 win_util.postpone(() => monitor_for_drive(vidpid, idx + 1), 50);
-            else 
-                logger.Fatal("can't find usb connected drive " + vidpid);
+            else {
+                // "can't find usb connected drive " + vidpid
+                Debug.Assert(false);
+            }
         }
 
         private void device_removed(Dictionary<string, string> properties) {
@@ -106,13 +108,14 @@ namespace external_drive_lib
                     lock (this) {
                         var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
                         if (ad != null)
-                            ad.connected_via_usb = false;                        
+                            ad.connected_via_usb = false;
                     }
                     refresh();
                 }
+            } else {
+                // deleted usb device with no PNPDeviceID
+                Debug.Assert(false);
             }
-            else 
-                logger.Fatal("deleted usb device with no PNPDeviceID");            
         }
 
 
@@ -133,12 +136,12 @@ namespace external_drive_lib
             try {
                 drives_now.AddRange(get_win_drives());
             } catch (Exception e) {
-                logger.Error("error getting win drives " + e);
+                throw new exception( "error getting win drives ", e);
             }
             try {
                 drives_now.AddRange(get_portable_drives());
             } catch (Exception e) {
-                logger.Error("error getting android drives " + e);
+                throw new exception("error getting android drives ", e);
             }
             var external = drives_now.Where(d => d.type != drive_type.internal_hdd).ToList();
             lock (this) {

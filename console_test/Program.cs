@@ -10,7 +10,6 @@ using external_drive_lib;
 using external_drive_lib.bulk;
 using external_drive_lib.interfaces;
 using external_drive_lib.monitor;
-using external_drive_lib.raw_tests;
 using external_drive_lib.util;
 
 namespace console_test
@@ -280,15 +279,35 @@ namespace console_test
                 Console.WriteLine("  " + p.Key + "=" + p.Value);
         }
 
+        private static void test_long_android_copy_async(string file_name) {
+            logger.Debug("android to win");
+            drive_root.inst.auto_close_win_dialogs = false;
+            var temp_dir = new_temp_path();
+            var src_file = drive_root.inst.parse_file(file_name);
+            src_file.copy_async(temp_dir);
+            Thread.Sleep(15000);
+
+            logger.Debug("android to android");
+            drive_root.inst.auto_close_win_dialogs = false;
+            src_file.copy_async("[a0]:/phone/dcim");
+            Thread.Sleep(15000);
+
+            logger.Debug("win to android");
+            var dest_file = temp_dir + "\\" + src_file.name;
+            File.Move(dest_file, dest_file + ".renamed");
+            drive_root.inst.parse_file(dest_file + ".renamed").copy_async("[a0]:/phone/dcim");
+            Thread.Sleep(15000);
+
+            logger.Debug("win to win");
+            var temp_dir2 = new_temp_path();
+            drive_root.inst.parse_file(dest_file + ".renamed").copy_async(temp_dir2);
+            Thread.Sleep(15000);
+        }
+
         static void Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
             logger.Debug("test started");
-
-            foreach ( var p in usb_util.get_all_portable_paths())
-                Console.WriteLine(p);
-            foreach ( var p in usb_util.get_all_usb_pnp_device_ids())
-                Console.WriteLine(p);
 
             //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
             //test_win_parse_files();
@@ -300,8 +319,8 @@ namespace console_test
             //android_test_parent_folder();
 
 
-            test_folderitems.test_long_android_copy_async("[a0]:/*/dcim/camera/20171017_195655.mp4");
-            test_android_disconnected();
+            //test_long_android_copy_async("[a0]:/*/dcim/camera/20171017_195655.mp4");
+            //test_android_disconnected();
             test_long_android_copy("[a0]:/*/dcim/camera/20171017_195655.mp4");
 
             test_bulk_copy();

@@ -12,7 +12,6 @@ namespace external_drive_lib.portable
     // https://blog.dotnetframework.org/2014/12/10/read-extended-properties-of-a-file-in-c/ -> this gets properties of a folder
 
     internal class portable_folder : IFolder2 {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private FolderItem fi_;
         private portable_drive drive_;
@@ -118,7 +117,6 @@ namespace external_drive_lib.portable
                 win_util.delete_sync_portable_file(existing_name);
 
             (fi_.GetFolder as Folder).CopyHere(dest_item, copy_options);
-            //logger.Debug("portablefolder: CopyHere complete");
             if ( synchronous)
                 win_util.wait_for_portable_copy_complete(full_path + "\\" + souce_name, file.size);
         }

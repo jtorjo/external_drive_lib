@@ -4,13 +4,12 @@ using System.Linq;
 using System.Management;
 using System.Text;
 using System.Threading.Tasks;
+using external_drive_lib.exceptions;
 
 namespace external_drive_lib.monitor
 {
     public class monitor_devices
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         private void device_inserted_event(object sender, EventArrivedEventArgs e)
         {
             try {
@@ -22,7 +21,7 @@ namespace external_drive_lib.monitor
 
                 added_device?.Invoke(properties);
             } catch (Exception ex) {
-                logger.Error("device inserted: " + ex.Message);
+                throw new exception( "invalid device inserted", ex);
             }
         }
 
@@ -37,7 +36,7 @@ namespace external_drive_lib.monitor
 
                 deleted_device?.Invoke(properties);
             } catch (Exception ex) {
-                logger.Error("device inserted: " + ex.Message);
+                throw new exception("invalid device removed", ex);
             }
         }
 

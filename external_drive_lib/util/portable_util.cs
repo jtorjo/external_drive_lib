@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using external_drive_lib.interfaces;
 using external_drive_lib.portable;
@@ -9,7 +10,6 @@ namespace external_drive_lib.util
 {
     static class portable_util
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static void enumerate_children(portable_drive drive, FolderItem fi, List<IFolder> folders, List<IFile> files) {
             folders.Clear();
@@ -17,11 +17,12 @@ namespace external_drive_lib.util
 
             if ( fi.IsFolder)
                 foreach ( FolderItem child in (fi.GetFolder as Folder).Items())
-                    if (child.IsLink) 
-                        logger.Fatal("android shortcut " + child.Name);                    
-                    else if (child.IsFolder) 
+                    if (child.IsLink) {
+                        // android shortcut " + child.Name
+                        Debug.Assert(false);
+                    } else if (child.IsFolder)
                         folders.Add(new portable_folder(drive, child));
-                    else 
+                    else
                         files.Add(new portable_file(drive, child as FolderItem2));
         }
 

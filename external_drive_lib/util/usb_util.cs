@@ -10,7 +10,6 @@ namespace external_drive_lib.util
 {
     public static class usb_util
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public static bool pnp_device_id_to_vidpid_and_unique_id(string device_id, ref string vid_pid, ref string unique_id) {
             device_id = device_id.ToLower();

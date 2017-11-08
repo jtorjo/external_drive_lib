@@ -14,7 +14,6 @@ using Shell32;
 namespace external_drive_lib.windows
 {
     class win_folder : IFolder2 {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private string parent_, name_;
         public win_folder(string parent_folder, string folder_name) {

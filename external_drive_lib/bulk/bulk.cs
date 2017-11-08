@@ -14,7 +14,6 @@ namespace external_drive_lib.bulk
 {
     public static class bulk
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         // copies the folder's files - NOT its sub-folders
         public static void bulk_copy_sync(string src_folder, string dest_folder) {
@@ -123,7 +122,6 @@ namespace external_drive_lib.bulk
                     win_util.wait_for_win_copy_complete(f.size, dest_file);
                 else if ( dest_android)
                     win_util.wait_for_portable_copy_complete(dest_file, f.size);
-                logger.Debug("bulk " + dest_file);
             }
         }
 

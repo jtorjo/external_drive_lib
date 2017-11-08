@@ -10,7 +10,6 @@ namespace external_drive_lib.util
 {
     internal static class win32_util
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         // Gets the classname of a window.
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
@@ -56,7 +55,7 @@ namespace external_drive_lib.util
                                     //ShowWindow(w, 6);
                                     // hiding the window doesn't work - so, just move it outside the screen
                                     MoveWindow(w, -100000, 10, 600, 300, false);
-                                    logger.Debug("closed " + w);
+                                    //logger.Debug("closed " + w);
                                 }
                             }
                         }

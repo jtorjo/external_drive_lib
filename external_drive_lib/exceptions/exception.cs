@@ -11,5 +11,8 @@ namespace external_drive_lib.exceptions
         public exception(string s) : base(s) {
             
         }
+        public exception(string s, Exception inner) : base(s, inner) {
+            
+        }
     }
 }
