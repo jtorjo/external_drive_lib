@@ -48,7 +48,7 @@ namespace external_drive_lib.portable
 
         public long size {
             get {
-                return portable_util.android_file_size(fi_);
+                return portable_util.portable_file_size(fi_);
             }
         }
 

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace external_drive_lib.monitor
 {
-    // this is code tested in another project - it's very likely we'll need it at some point
     public class monitor_devices
     {
         private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

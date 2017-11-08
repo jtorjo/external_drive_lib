@@ -19,8 +19,14 @@ namespace external_drive_lib.portable
         private string friendly_name_;
 
         private string root_path_;
+
+        /* A USB device that is plugged in identifies itself by its VID/PID combination. 
+         * A VID is a 16-bit vendor number (Vendor ID). A PID is a 16-bit product number (Product ID). 
+         * The PC uses the VID/PID combination to find the drivers (if any) that are to be used for the USB device.
+        */
         private string vid_pid_ = "";
 
+        // this portable device's unique ID - think of it as a serial number
         private string unique_id_ = "";
 
         private bool enumerated_children_ = false;
@@ -34,14 +40,8 @@ namespace external_drive_lib.portable
             friendly_name_ = root_.Name;
             root_path_ = root_.Path;
 
-            var idx = root_path_.IndexOf("vid_");
-            Debug.Assert(idx >= 0);
-            if (idx >= 0) {
-                var idx2 = root_path_.IndexOf("pid_", idx);
-                var idx3 = root_path_.IndexOf("&", idx2);
-                vid_pid_ = root_path_.Substring(idx, idx3 - idx);
-            }
-            unique_id_ = unique_id;
+            if ( usb_util.portable_path_to_vidpid(root_path_, ref vid_pid_))
+                unique_id_ = vid_pid_;
 
             find_drive_type();
         }
@@ -122,7 +122,6 @@ namespace external_drive_lib.portable
             }
         }
 
-        // FIXME
         public string unique_id {
             get { return unique_id_; }
             internal set { unique_id_ = value; }

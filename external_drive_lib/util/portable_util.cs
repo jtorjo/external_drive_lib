@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using external_drive_lib.interfaces;
 using external_drive_lib.portable;
+using external_drive_lib.windows;
 using Shell32;
 
 namespace external_drive_lib.util
@@ -31,7 +33,7 @@ namespace external_drive_lib.util
             return list;
         }
 
-        public static long android_file_size(FolderItem2 fi) {
+        public static long portable_file_size(FolderItem2 fi) {
             try {
                 var sz = (long)fi.ExtendedProperty("size");
                 return sz;
@@ -58,5 +60,22 @@ namespace external_drive_lib.util
                 return -1;
             }            
         }
+
+        public static Folder get_my_computer() {
+            return win_util.get_shell32_folder(0x11);
+        }
+
+        public static List<FolderItem> get_portable_connected_device_drives() {
+            var usb_drives = new List<FolderItem>();
+
+            foreach (FolderItem fi in get_my_computer().Items()) {
+                var path = fi.Path;
+                if (Directory.Exists(path) || path.Contains(":\\"))
+                    continue;
+                usb_drives.Add(fi);
+            }
+            return usb_drives;
+        }
+
     }
 }

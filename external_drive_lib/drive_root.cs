@@ -35,7 +35,7 @@ namespace external_drive_lib
                 if (device.ContainsKey("PNPDeviceID")) {
                     var device_id = device["PNPDeviceID"];
                     string vid_pid = "", unique_id = "";
-                    if (pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
+                    if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
                         lock(this)
                             vidpid_to_unique_id_.Add(vid_pid, unique_id);
                     }
@@ -56,28 +56,12 @@ namespace external_drive_lib
             get { lock(this) return drives_; }
         }
 
-        private static bool pnp_device_id_to_vidpid_and_unique_id(string device_id, ref string vid_pid, ref string unique_id) {
-            device_id = device_id.ToLower();
-            vid_pid = unique_id = "";
-            var valid = device_id.StartsWith("usb\\") && device_id.Contains("vid") && device_id.Contains("pid") && device_id.Count(c => c == '\\') >= 2;
-            if (valid) {
-                device_id = device_id.Substring(4);
-                var idx = device_id.IndexOf("\\");
-                vid_pid = device_id.Substring(0, idx);
-                unique_id = device_id.Substring(idx + 1).Trim();
-                if (vid_pid.Count(c => c == '&') > 1)
-                    // some USB devices also expose an external removable drive (which can contain drivers to install) - we ignore that
-                    return false;
-                return true;
-            }
-            return false;
-        }
 
         private void device_added(Dictionary<string, string> properties) {
             if (properties.ContainsKey("PNPDeviceID")) {
                 var device_id = properties["PNPDeviceID"];
                 string vid_pid = "", unique_id = "";
-                if ( pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
+                if ( usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
                     lock (this) {
                         if (vidpid_to_unique_id_.ContainsKey(vid_pid))
                             vidpid_to_unique_id_[vid_pid] = unique_id;
@@ -104,7 +88,7 @@ namespace external_drive_lib
         // here, we know the drive was connected, wait a bit until it's actually visible
         private void monitor_for_drive(string vidpid, int idx) {
             const int MAX_RETRIES = 10;
-            var drives_now = get_android_drives();
+            var drives_now = get_portable_drives();
             var found = drives_now.FirstOrDefault(d => (d as portable_drive).vid_pid == vidpid);
             if (found != null) 
                 refresh();
@@ -118,7 +102,7 @@ namespace external_drive_lib
             if (properties.ContainsKey("PNPDeviceID")) {
                 var device_id = properties["PNPDeviceID"];
                 string vid_pid = "", unique_id = "";
-                if (pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
+                if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
                     lock (this) {
                         var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
                         if (ad != null)
@@ -152,7 +136,7 @@ namespace external_drive_lib
                 logger.Error("error getting win drives " + e);
             }
             try {
-                drives_now.AddRange(get_android_drives());
+                drives_now.AddRange(get_portable_drives());
             } catch (Exception e) {
                 logger.Error("error getting android drives " + e);
             }
@@ -170,7 +154,7 @@ namespace external_drive_lib
                         ad.unique_id = vidpid_to_unique_id_[ad.vid_pid];
         }
 
-        // As drive name, use any of: "{<unique_id>}:", "<drive-name>:", "[a<android-drive-index>]:", "[d<drive-index>]:"
+        // As drive name, use any of: "{<unique_id>}:", "<drive-name>:", "[a<android-drive-index>]:", "[p<portable-index>]", "[d<drive-index>]:"
         public IDrive try_get_drive(string drive_prefix) {
             // case insensitive
             foreach ( var d in drives)
@@ -263,26 +247,11 @@ namespace external_drive_lib
         }
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Android
+        // Portable
 
-        private static Folder get_my_computer() {
-            return win_util.get_shell32_folder(0x11);
-        }
 
-        private static List<FolderItem> get_android_connected_device_drives() {
-            var usb_drives = new List<FolderItem>();
-
-            foreach (FolderItem fi in get_my_computer().Items()) {
-                var path = fi.Path;
-                if (Directory.Exists(path) || path.Contains(":\\"))
-                    continue;
-                usb_drives.Add(fi);
-            }
-            return usb_drives;
-        }
-
-        private List<IDrive> get_android_drives() {
-            var new_drives = get_android_connected_device_drives().Select(d => new portable_drive(d) as IDrive).ToList();
+        private List<IDrive> get_portable_drives() {
+            var new_drives = portable_util. get_portable_connected_device_drives().Select(d => new portable_drive(d) as IDrive).ToList();
             List<IDrive> old_drives = null;
             lock (this)
                 old_drives = drives_.Where(d => d is portable_drive).ToList();
@@ -296,7 +265,7 @@ namespace external_drive_lib
             return result;
         }
 
-        // END OF Android
+        // END OF Portable
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////

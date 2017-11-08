@@ -11,6 +11,7 @@ using external_drive_lib.bulk;
 using external_drive_lib.interfaces;
 using external_drive_lib.monitor;
 using external_drive_lib.raw_tests;
+using external_drive_lib.util;
 
 namespace console_test
 {
@@ -281,6 +282,14 @@ namespace console_test
 
         static void Main(string[] args)
         {
+            log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
+            logger.Debug("test started");
+
+            foreach ( var p in usb_util.get_all_portable_paths())
+                Console.WriteLine(p);
+            foreach ( var p in usb_util.get_all_usb_pnp_device_ids())
+                Console.WriteLine(p);
+
             //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
             //test_win_parse_files();
             //test_parent_folder();
@@ -289,23 +298,15 @@ namespace console_test
             //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
             //android_test_parse_files();
             //android_test_parent_folder();
-//            test_folderitems.test_android_folderitems3();
 
 
-            log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
-            logger.Debug("test started");
             test_folderitems.test_long_android_copy_async("[a0]:/*/dcim/camera/20171017_195655.mp4");
-
             test_android_disconnected();
             test_long_android_copy("[a0]:/*/dcim/camera/20171017_195655.mp4");
 
             test_bulk_copy();
-
             android_test_create_delete_folder();
-
             android_test_copy_and_delete_file();
-
-
 
             test_copy_files_android_to_win_and_viceversa();
             android_test_copy_full_dir_to_windows();
