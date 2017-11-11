@@ -44,3 +44,7 @@ added easy way to test Portable Paths and PNPDeviceIDs
 
 1.0.1o
 removed logging from the lib; 
+
+- added IDrive.is_available
+- erase all former temp dirs 
+- added try_parse_file/try_parse_folder

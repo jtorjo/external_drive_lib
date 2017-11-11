@@ -51,6 +51,9 @@ namespace external_drive_lib.interfaces
         // note: not as a property, since this could actually take time to find out - we don't want to break debugging
         bool is_connected();
 
+        // returns true if the drive is available - note that the drive can be connected via USB, but locked (thus, not available)
+        bool is_available();
+
         drive_type type { get; }
 
         // this is the drive path, such as "c:\" - however, for non-conventional drives, it can be a really weird path
@@ -65,8 +68,13 @@ namespace external_drive_lib.interfaces
         IEnumerable<IFolder> folders { get; }
         IEnumerable<IFile> files { get; }
 
+        // throws on failure
         IFile parse_file(string path);
         IFolder parse_folder(string path);
+
+        // returns null on failure
+        IFile try_parse_file(string path);
+        IFolder try_parse_folder(string path);
 
         // creates the full path to the folder
         IFolder create_folder(string folder);

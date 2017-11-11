@@ -71,8 +71,12 @@ namespace external_drive_lib.util
 
             foreach (FolderItem fi in get_my_computer().Items()) {
                 var path = fi.Path;
-                if (Directory.Exists(path) || path.Contains(":\\"))
-                    continue;
+                try {
+                    if (Directory.Exists(path) || path.Contains(":\\"))
+                        continue;
+                } catch {
+                    // a usb drive
+                }
                 usb_drives.Add(fi);
             }
             return usb_drives;

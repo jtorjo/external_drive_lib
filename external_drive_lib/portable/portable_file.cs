@@ -28,12 +28,12 @@ namespace external_drive_lib.portable
 
         public IFolder folder => new portable_folder(drive_, (fi_.Parent as Folder2).Self);
 
-        public string full_path => drive_.parse_android_path(fi_);
+        public string full_path => drive_.parse_portable_path(fi_);
 
         public bool exists {
             get {
                 try {
-                    if (drive.is_connected()) {
+                    if (drive.is_available()) {
                         // if this throws, drive exists, but file does not
                         drive_root.inst.parse_file(full_path);
                         return true;

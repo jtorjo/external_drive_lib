@@ -31,7 +31,7 @@ namespace external_drive_lib.portable
         public bool exists {
             get {
                 try {
-                    if (drive.is_connected()) {
+                    if (drive.is_available()) {
                         // if this throws, drive exists, but folder does not
                         drive_root.inst.parse_folder(full_path);
                         return true;
@@ -49,7 +49,7 @@ namespace external_drive_lib.portable
 
         public string full_path {
             get {
-                return drive_.parse_android_path(fi_);
+                return drive_.parse_portable_path(fi_);
             }
         }
         public IDrive drive {

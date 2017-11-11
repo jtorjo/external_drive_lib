@@ -218,6 +218,29 @@ namespace external_drive_lib
                 drive = folder_or_file = null;
         }
 
+        // returns null on failure
+        public IFile try_parse_file(string path) {
+            // split into drive + path
+            string drive_str, folder_or_file;
+            split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
+            if (drive_str == null)
+                return null;
+            var drive = get_drive(drive_str);
+            return drive.try_parse_file(folder_or_file);            
+        }
+
+        // returns null on failure
+        public IFolder try_parse_folder(string path) {
+            string drive_str, folder_or_file;
+            split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
+            if ( drive_str == null)
+                return null;
+            var drive = try_get_drive(drive_str);
+            if (drive == null)
+                return null;
+            return drive.try_parse_folder(folder_or_file);            
+        }
+
         // throws if anything goes wrong
         public IFile parse_file(string path) {
             // split into drive + path
@@ -225,7 +248,9 @@ namespace external_drive_lib
             split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
             if ( drive_str == null)
                 throw new exception("invalid path " + path);
-            var drive = get_drive(drive_str);
+            var drive = try_get_drive(drive_str);
+            if (drive == null)
+                return null;
             return drive.parse_file(folder_or_file);
         }
 

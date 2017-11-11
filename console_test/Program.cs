@@ -16,319 +16,197 @@ namespace console_test
 {
     class Program
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         static string new_temp_path() {
             var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(temp_dir);
             return temp_dir;
         }
 
-        static void dump_folders_and_files(IEnumerable<IFolder> folders, IEnumerable<IFile> files, int indent) {
-            Console.WriteLine("");
-            Console.WriteLine("Level " + (indent+1));
-            Console.WriteLine("");
-            foreach ( var f in folders)
-                Console.WriteLine(new string(' ', indent * 2) + f.full_path + " " + f.name);
+        static void example_show_all_portable_drives() {
+            Console.WriteLine("Enumerating Portable Drives:");
+            var portable_drives = drive_root.inst.drives.Where(d => d.type.is_portable()).ToList();
+            foreach ( var pd in portable_drives)
+                Console.WriteLine("Drive Unique ID: " + pd.unique_id + ", friendly name=" + pd.friendly_name 
+                    + "type=" + pd.type + ", available=" + pd.is_available());
+            if ( portable_drives.Count < 1)
+                Console.WriteLine("No Portable Drives connected");
+        }
+
+        static string files_count_suffix(IEnumerable<IFile> files) {
+            var count = files.Count();
+            var suffix = count > 0 ? " - " + count + " files" : "";
+            return suffix;
+        }
+
+        static void traverse_folder(IFolder folder, bool dump_file_count_only, int level) {
+            var suffix = dump_file_count_only ? files_count_suffix(folder.files): "";
+            Console.WriteLine(new string(' ', level * 2) + folder.name + suffix);
+            if ( !dump_file_count_only)
+                dump_files(folder.files, level);
+
+            foreach ( var child in folder.child_folders)
+                traverse_folder(child, dump_file_count_only, level + 1);
+        }
+
+        static void dump_files(IEnumerable<IFile> files, int indent) {
             foreach ( var f in files)
-                Console.WriteLine(new string(' ', indent * 2) + f.full_path + " " + f.name + " " + f.size + " " + f.last_write_time);
+                Console.WriteLine(new string(' ', indent * 2) + f.name + ", size=" + f.size + ", modified=" + f.last_write_time);
         } 
 
-        static void traverse_drive(IDrive d, int levels) {
-            var folders = d.folders.ToList();
-            // level 1
-            dump_folders_and_files(folders, d.files, 0);
-            for (int i = 1; i < levels; ++i) {
-                var child_folders = new List<IFolder>();
-                var child_files = new List<IFile>();
-                foreach (var f in folders) {
-                    try {
-                        child_folders.AddRange(f.child_folders);
-                    } catch(Exception e) {
-                        // could be unauthorized access
-                        Console.WriteLine(new string(' ', i * 2) + f.full_path + " *** UNAUTHORIZED folders " + e);
-                    }
-                    try {
-                        child_files.AddRange(f.files);
-                    } catch {
-                        // could be unauthorized access
-                        Console.WriteLine(new string(' ', i * 2) + f.full_path + " *** UNAUTHORIZED files");
-                    }
+        static void traverse_drive(IDrive d, bool dump_file_count_only) {
+            Debug.Assert(d.type.is_portable());
+
+            var suffix = dump_file_count_only ? files_count_suffix(d.files) : "";
+            Console.WriteLine("Drive " + d.unique_id + suffix);
+            if ( !dump_file_count_only)
+                dump_files(d.files, 0);
+            foreach ( var folder in d.folders)
+                traverse_folder(folder, dump_file_count_only, 1);
+        }
+
+        static void example_traverse_first_portable_drive(bool dump_file_count_only) {
+            Console.WriteLine("Traversing First Portable Drive");
+            var portable_drives = drive_root.inst.drives.Where(d => d.type.is_portable()).ToList();
+            if (portable_drives.Count > 0) 
+                traverse_drive(portable_drives[0], dump_file_count_only);
+            else
+                Console.WriteLine("No Portable Drives connected");
+        }
+
+        static void example_enumerate_all_android_albums() {
+            Console.WriteLine("Enumerating all albums on First Android Drive");
+            if (drive_root.inst.drives.Any(d => d.type.is_android())) {
+                foreach ( var folder in drive_root.inst.parse_folder("[a0]:/*/dcim").child_folders)
+                    Console.WriteLine(folder.name + " - " + folder.files.Count() + " files");
+            }
+            else 
+                Console.WriteLine("No Android Drive Connected");
+        }
+
+        static void example_copy_all_camera_photos_to_hdd() {
+            Console.WriteLine("Copying all photos you took on your first Android device");
+            var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
+            if (camera != null) {
+                var temp = new_temp_path();
+                Console.WriteLine("Copying to " + temp);
+                bulk.bulk_copy_sync(camera.files, temp);
+                Console.WriteLine("Copying to " + temp + " - complete");
+            }
+            else 
+                Console.WriteLine("No Android Drive Connected");
+        }
+
+        static void example_copy_latest_photo_to_hdd() {
+            Console.WriteLine("Copying latest photo from your Android device to HDD");    
+            var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
+            if (camera != null) {
+                var temp = new_temp_path();
+                var files = camera.files.OrderBy(f => f.last_write_time).ToList();
+                if (files.Count > 0) {
+                    var latest_file = files.Last();
+                    Console.WriteLine("Copying " + latest_file.full_path + " to " + temp);
+                    latest_file.copy_sync(temp);
+                    Console.WriteLine("Copying " + latest_file.full_path + " to " + temp + " - complete");
                 }
-                dump_folders_and_files(child_folders, child_files, i);
-                folders = child_folders;
+                else 
+                    Console.WriteLine("You have no Photos");
             }
+            else 
+                Console.WriteLine("No Android Drive Connected");
         }
 
-        // these are files from my drive
-        static void test_win_parse_files() {
-            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").size == 4532595);
-            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_104952.jPg").size == 7389360);
-            Debug.Assert(drive_root.inst.parse_folder("D:\\cool_pics\\a10").files.Count() == 25);
-            Debug.Assert(drive_root.inst.parse_folder("D:\\cool_pics").child_folders.Count() == 8);
-
-            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").full_path == "D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg");
-            Debug.Assert(drive_root.inst.parse_folder("D:\\cool_pics\\a10").full_path == "D:\\cool_pics\\a10");
-        }
-
-        static void test_parent_folder() {
-            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").folder.full_path == "D:\\cool_pics\\a00\\b0\\c0");
-            Debug.Assert(drive_root.inst.parse_file("D:\\cool_pics\\a00\\b0\\c0\\20161115_035718.jPg").folder.parent.full_path == "D:\\cool_pics\\a00\\b0");
-        }
-
-
-        ///////////////////////////////////////////////////////////////////
-        // Android tests
-
-        static void android_test_parse_files() {
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").size == 4598747);
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121601.jPg").size == 3578988);
-            Debug.Assert(drive_root.inst.parse_folder("[a0]:/*/dcim/camera") != null);
-
-//            Debug.Assert(drive_root.inst.parse_folder("[a0]:/*/dcim/camera").full_path.ToLower() == "[a0]:/*\\dcim\\camera");
-        }
-
-        static void android_test_parent_folder() {
-            // need to care about [a0] in full_path
-            Debug.Assert(false);
-
-            // ... uses file.parent
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").folder.full_path.ToLower() 
-                         == "[a0]:/*\\dcim\\camera");
-            // ... uses file.parent and folder.parent
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").folder.parent.full_path.ToLower() 
-                         == "[a0]:/*\\dcim");
-
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121557.jPg").full_path.ToLower() 
-                         == "[a0]:/*\\dcim\\camera\\20171005_121557.jpg");
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/camera/20171005_121601.jPg").full_path.ToLower() 
-                         == "[a0]:/*\\dcim\\camera\\20171005_121601.jpg");            
-
-        }
-
-        static void android_test_create_delete_folder() {
-            Debug.Assert(drive_root.inst.new_folder("[a0]:/*/dcim/testing123") != null);
-            drive_root.inst.parse_folder("[a0]:/*/dcim/testing123").delete_sync();
-            try {
-                drive_root.inst.parse_folder("[a0]:/*/dcim/testing123");
-                Debug.Assert(false);
-
-            } catch {
-                // ok - the folder should not exist anymore
-            }            
-        }
-
-        static void android_test_copy_and_delete_file() {
-            var camera = drive_root.inst.parse_folder("[a0]:/*/dcim/camera");
-            var first_file = camera.files.ToList()[0];
-            first_file.copy_sync(camera.parent.full_path);
-
-            // copy : android to windows
-            var dir = new_temp_path();
-            first_file.copy_sync(dir);
-            var name = first_file.name;
-            Debug.Assert(first_file.size == new FileInfo(dir + "\\" + name).Length);
-
-            // copy: windows to android
-            var renamed = dir + "\\" + name + ".renamed.jpg";
-            File.Move(dir + "\\" + name, renamed);
-            drive_root.inst.parse_file(renamed).copy_sync("[a0]:/*/dcim/");
-            Debug.Assert(first_file.size == drive_root.inst.parse_file("[a0]:/*/dcim/" + name + ".renamed.jpg").size);
-        }
-
-
-        // what I want is to find out how fast is this, compared to Windows Explorer (roughly)
-        // 80738 millis on 452 items (1.8Gb) in Debug
-        // 77477 millis on 452 items (1.8Gb) in Release
-        //
-        // 67 secs copy from xplorer (clearly, this was a bulk copy)
-        static void android_test_copy_full_dir_to_windows() {
-            DateTime start = DateTime.Now;
-            var dest_dir = new_temp_path();
-            var camera = drive_root.inst.parse_folder("[a0]:/*/dcim/camera");
-            foreach (var f in camera.files) {
-                Console.WriteLine(f.name);
-                f.copy_sync(dest_dir);
+        static void example_find_biggest_photo_in_size() {
+            Console.WriteLine("Copying latest photo from your Android device to HDD");    
+            var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
+            if (camera != null) {
+                var files = camera.files.ToList();
+                if (files.Count > 0) {
+                    var max_size = files.Max(f => f.size);
+                    var biggest_file = files.First(f => f.size == max_size);
+                    Console.WriteLine("Your biggest photo is " + biggest_file.full_path + ", size=" + biggest_file.size);
+                }
+                else 
+                    Console.WriteLine("You have no Photos");
             }
-            var spent_time = (DateTime.Now - start).TotalMilliseconds;
-            Console.WriteLine("spent " + spent_time.ToString("f2") + " ms");
+            else 
+                Console.WriteLine("No Android Drive Connected");            
         }
 
-        // END OF Android tests
-        ///////////////////////////////////////////////////////////////////
-
-        // copies all files from this folder into a sub-folder we create
-        // after we do that, we delete the sub-folder
-        static void test_copy_and_delete_files(string src_path) {
-            var src = drive_root.inst.parse_folder(src_path);
-            var old_folder_count = src.child_folders.Count();
-            var child_dir = src_path + "/child1/child2/child3/";
-            var dest = src.drive.create_folder(child_dir);
-            foreach ( var child in src.files)
-                child.copy_sync(child_dir);
-            long src_size = src.files.Sum(f => f.size);
-            long dest_size = dest.files.Sum(f => f.size);
-            Debug.Assert(src_size == dest_size);
-            Debug.Assert(src.child_folders.Count() == old_folder_count + 1);
-            foreach (var child in dest.files)
-                child.delete_sync();
-
-            var first_child = dest.parent.parent;
-            first_child.delete_sync();
-
-            Debug.Assert(src.child_folders.Count() == old_folder_count );
+        static long file_size(IFile f) {
+            return f?.size ?? 0;
+        }
+        static IFile get_biggest_file(List<IFile> files) {
+            if (files.Count < 1)
+                return null;
+            var max_size = files.Max(f => f.size);
+            var biggest_file = files.First(f => f.size == max_size);
+            return biggest_file;
         }
 
+        static IFile get_biggest_file(IFolder folder) {
+            var files = folder.files.ToList();
+            if (files.Count < 1)
+                return null;
+            var max_size = files.Max(f => f.size);
+            var biggest_file = files.First(f => f.size == max_size);
+            return biggest_file;
+        }
 
-        static void test_copy_files(string src_path, string dest_path) {
-            var src = drive_root.inst.parse_folder(src_path);
-            var dest = drive_root.inst.new_folder(dest_path);
-            foreach (var child in src.files) {
-                Console.Write(child.full_path);
-                child.copy_sync(dest_path);
-                Console.WriteLine(" - done");
+        static IFile get_biggest_file_recursive(IFolder folder) {
+            var biggest = get_biggest_file(folder);
+            foreach (var child in folder.child_folders) {
+                var child_biggest = get_biggest_file_recursive(child);
+                if (file_size( biggest) < file_size( child_biggest))
+                    biggest = child_biggest;
             }
-
-            long src_size = src.files.Sum(f => f.size);
-            long dest_size = dest.files.Sum(f => f.size);
-            Debug.Assert(src_size == dest_size);
+            return biggest;
         }
 
-        static void test_copy_files_android_to_win_and_viceversa() {
-            // first from android to win, then vice versa
-            var temp_dir = new_temp_path();
-            test_copy_files("[a0]:/*/dcim/facebook", temp_dir);
-            test_copy_files(temp_dir, "[a0]:/*/dcim/facebook_copy");
-            drive_root.inst.parse_folder(temp_dir).delete_sync();
-            drive_root.inst.parse_folder("[a0]:/*/dcim/facebook_copy").delete_sync();            
+        static IFile get_biggest_file(IDrive d) {
+            IFile biggest = get_biggest_file(d.files.ToList());
+            foreach (var child in d.folders) {
+                var child_biggest = get_biggest_file_recursive(child);
+                if (file_size( biggest) < file_size( child_biggest))
+                    biggest = child_biggest;
+            }
+            return biggest;
         }
 
-        static void test_long_android_copy(string file_name) {
-            var temp_dir = new_temp_path();
-            var src_file = drive_root.inst.parse_file(file_name);
-            src_file.copy_sync(temp_dir);
-            var dest_file = temp_dir + "\\" + src_file.name;
-            Debug.Assert(src_file.size == drive_root.inst.parse_file(dest_file).size);
-            File.Move(dest_file, dest_file + ".renamed");
-            drive_root.inst.parse_file(dest_file + ".renamed").copy_sync("[a0]:/*/dcim");
-            Debug.Assert(drive_root.inst.parse_file("[a0]:/*/dcim/" + src_file.name + ".renamed").size == src_file.size);
-            drive_root.inst.parse_file("[a0]:/*/dcim/" + src_file.name + ".renamed").delete_sync();
+
+        static void example_find_biggest_file_on_first_portable_device() {
+            Console.WriteLine("Findind biggest file on First Portable Device");
+            var portable_drives = drive_root.inst.drives.Where(d => d.type.is_portable()).ToList();
+            if (portable_drives.Count > 0 ) {
+                if (portable_drives[0].is_available()) {
+                    var biggest = get_biggest_file(portable_drives[0]);
+                    if (biggest != null)
+                        Console.WriteLine("Biggest file on device " + biggest.full_path + ", " + biggest.size);
+                    else
+                        Console.WriteLine("You have no files on device");
+                }
+                else Console.WriteLine("First Portable device is not available");
+            }
+            else
+                Console.WriteLine("No Portable Drives connected");
         }
 
-        static void test_bulk_copy() {
-            var src_win = "D:\\cool_pics\\a00\\b0\\c0";
-            var dest_win = new_temp_path();
-            var dest_android = "[a0]:/*/dcim/bulk";
-            int i = 0;
-            // take "even" files
-            var src_files_win = drive_root.inst.parse_folder(src_win).files.Where(f => i++ % 2 == 0).ToList();
-            var src_files_size = src_files_win.Sum(f => f.size);
-            // win to win
-            bulk.bulk_copy_sync(src_files_win, dest_win);
-            var dest_win_size = drive_root.inst.parse_folder(dest_win).files.Sum(f => f.size);
-            Debug.Assert(dest_win_size == src_files_size);
 
-            // win to android
-            bulk.bulk_copy_sync(src_files_win, dest_android);
-            var dest_android_size = drive_root.inst.parse_folder(dest_android).files.Sum(f => f.size);
-            Debug.Assert(dest_android_size == src_files_size);
-
-            // android to android
-            i = 0;
-            var dest_android_copy = "[a0]:/*/dcim/bulk_copy";
-            var src_files_android = drive_root.inst.parse_folder(dest_android).files.Where(f => i++ % 2 == 0).ToList();
-            var src_files_android_size = src_files_android.Sum(f => f.size);
-            bulk.bulk_copy_sync(src_files_android, dest_android_copy);
-            var dest_files_android_size = drive_root.inst.parse_folder(dest_android_copy).files.Sum(f => f.size);
-            Debug.Assert(src_files_android_size == dest_files_android_size);
-
-            // android to win
-            var dest_win_copy = new_temp_path();
-            bulk.bulk_copy_sync(src_files_android, dest_win_copy);
-            var dest_win_copy_size = drive_root.inst.parse_folder(dest_win_copy).files.Sum(f => f.size);
-            Debug.Assert(dest_win_copy_size == src_files_android_size);
-
-            drive_root.inst.parse_folder(dest_win).delete_sync();
-            drive_root.inst.parse_folder(dest_win_copy).delete_sync();
-
-            drive_root.inst.parse_folder(dest_android).delete_sync();
-            drive_root.inst.parse_folder(dest_android_copy).delete_sync();
-        }
-
-        static void test_android_disconnected() {
-            var camera = "[a0]:/*/dcim/camera";
-            var camera_folder = drive_root.inst.parse_folder(camera);
-            var first_file = drive_root.inst.parse_folder(camera).files.ToList()[0];
-            Debug.Assert(camera_folder.exists);
-            Debug.Assert(first_file.exists);
-            Debug.Assert(first_file.drive.is_connected());
-            Debug.Assert(camera_folder.drive.is_connected());
-
-            logger.Debug("camera file " + first_file.size);
-            logger.Debug("Disconnect the phone now.");
-            Console.ReadLine();
-            Debug.Assert(!camera_folder.exists);
-            Debug.Assert(!first_file.exists);
-            Debug.Assert(!first_file.drive.is_connected());
-            Debug.Assert(!camera_folder.drive.is_connected());
-        }
-
-        private static void print_device_properties(Dictionary<string, string> properties, string prefix) {
-            Console.WriteLine(prefix);
-            foreach ( var p in properties)
-                Console.WriteLine("  " + p.Key + "=" + p.Value);
-        }
-
-        private static void test_long_android_copy_async(string file_name) {
-            logger.Debug("android to win");
-            drive_root.inst.auto_close_win_dialogs = false;
-            var temp_dir = new_temp_path();
-            var src_file = drive_root.inst.parse_file(file_name);
-            src_file.copy_async(temp_dir);
-            Thread.Sleep(15000);
-
-            logger.Debug("android to android");
-            drive_root.inst.auto_close_win_dialogs = false;
-            src_file.copy_async("[a0]:/phone/dcim");
-            Thread.Sleep(15000);
-
-            logger.Debug("win to android");
-            var dest_file = temp_dir + "\\" + src_file.name;
-            File.Move(dest_file, dest_file + ".renamed");
-            drive_root.inst.parse_file(dest_file + ".renamed").copy_async("[a0]:/phone/dcim");
-            Thread.Sleep(15000);
-
-            logger.Debug("win to win");
-            var temp_dir2 = new_temp_path();
-            drive_root.inst.parse_file(dest_file + ".renamed").copy_async(temp_dir2);
-            Thread.Sleep(15000);
-        }
 
         static void Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
-            logger.Debug("test started");
 
-            //traverse_drive( drive_root.inst.get_drive("d:\\"), 3);
-            //test_win_parse_files();
-            //test_parent_folder();
-            //test_copy_and_delete_files("D:\\cool_pics\\a00\\b0\\c0\\");
-            
-            //traverse_drive( drive_root.inst.get_drive(android_prefix), 4);
-            //android_test_parse_files();
-            //android_test_parent_folder();
+            example_show_all_portable_drives();
 
+            bool dump_file_count_only = true;
+            example_traverse_first_portable_drive(dump_file_count_only);
 
-            //test_long_android_copy_async("[a0]:/*/dcim/camera/20171017_195655.mp4");
-            //test_android_disconnected();
-            test_long_android_copy("[a0]:/*/dcim/camera/20171017_195655.mp4");
+            example_enumerate_all_android_albums();
+            example_copy_all_camera_photos_to_hdd();                    
 
-            test_bulk_copy();
-            android_test_create_delete_folder();
-            android_test_copy_and_delete_file();
-
-            test_copy_files_android_to_win_and_viceversa();
-            android_test_copy_full_dir_to_windows();
+            example_copy_latest_photo_to_hdd();
+            example_find_biggest_photo_in_size();
+            example_find_biggest_file_on_first_portable_device();
         }
     }
 }

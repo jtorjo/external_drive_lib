@@ -15,13 +15,25 @@ namespace external_drive_lib.windows
         private static readonly string temporary_root_dir_ = temporary_root_dir_impl();
         private static string temporary_root_dir_impl() {
             // we need a unique folder each time we're run, so that we never run into conflicts when moving stuff here
-            var dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\" + DateTime.Now.Ticks;
+            var root_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\";
+            var dir = root_dir + DateTime.Now.Ticks;
             // FIXME create a task to erase all other folders (previously created that is)
             try {
+                // erase all the other created folders, if any
+                var prev_dirs = new DirectoryInfo(root_dir).EnumerateDirectories().Select(d => d.FullName).ToList();
+                Task.Run(() => delete_folders(prev_dirs));
                 Directory.CreateDirectory(dir);
             } catch {
             }
             return dir;
+        }
+
+        private static void delete_folders(List<string> folders) {
+            foreach ( var f in folders)
+                try {
+                    Directory.Delete(f, true);
+                } catch {
+                }
         }
 
         public static string temporary_root_dir() {

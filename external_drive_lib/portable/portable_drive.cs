@@ -85,6 +85,10 @@ namespace external_drive_lib.portable
         }
 
         public bool is_connected() {
+            return connected_via_usb;
+        }
+
+        public bool is_available() {
             try {
                 if (connected_via_usb) {
                     var items = (root_.GetFolder as Folder).Items();
@@ -160,6 +164,20 @@ namespace external_drive_lib.portable
         }
 
         public IFile parse_file(string path) {
+            var f = try_parse_file(path);
+            if ( f == null)
+                throw new exception("invalid path " + path);
+            return f;
+        }
+
+        public IFolder parse_folder(string path) {
+            var f = try_parse_folder(path);
+            if (f == null)
+                throw new exception("invalid path " + path);
+            return f;
+        }
+
+        public IFile try_parse_file(string path) {
             var unique_drive_id = "{" + unique_id + "}";
             if (path.StartsWith(unique_drive_id, StringComparison.CurrentCultureIgnoreCase))
                 path = path.Substring(unique_drive_id.Length + 2); // ignore ":\" as well
@@ -171,14 +189,14 @@ namespace external_drive_lib.portable
             sub_folder_names.RemoveAt(sub_folder_names.Count - 1);
             var raw_folder = parse_sub_folder(sub_folder_names);
             if (raw_folder == null)
-                throw new exception("invalid path " + path);
+                return null;
             var file = (raw_folder.GetFolder as Folder).ParseName(file_name);
             if ( file == null)
-                throw new exception("invalid path " + path);
+                return null;
             return new portable_file(this, file as FolderItem2);
         }
 
-        public IFolder parse_folder(string path) {
+        public IFolder try_parse_folder(string path) {
             path = path.Replace("/", "\\");
             if (path.EndsWith("\\"))
                 path = path.Substring(0, path.Length - 1);
@@ -191,11 +209,11 @@ namespace external_drive_lib.portable
             var sub_folder_names = path.Split('\\').ToList();
             var raw_folder = parse_sub_folder(sub_folder_names);
             if (raw_folder == null)
-                throw new exception("invalid path " + path);
+                return null;
             return new portable_folder(this, raw_folder);
         }
 
-        public string parse_android_path(FolderItem fi) {
+        public string parse_portable_path(FolderItem fi) {
             var path = fi.Path;
             if (path.EndsWith("\\"))
                 path = path.Substring(path.Length - 1);

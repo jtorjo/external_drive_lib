@@ -33,6 +33,10 @@ namespace external_drive_lib.windows
             return true;
         }
 
+        public bool is_available() {
+            return true;
+        }
+
         public drive_type type {
             get { return drive_type.internal_hdd; }
         }
@@ -56,6 +60,20 @@ namespace external_drive_lib.windows
         }
 
         public IFile parse_file(string path) {
+            var f = try_parse_file(path);
+            if ( f == null)
+                throw new exception("invalid path " + path);
+            return f;
+        }
+
+        public IFolder parse_folder(string path) {
+            var f = try_parse_folder(path);
+            if ( f == null)
+                throw new exception("invalid path " + path);
+            return f;
+        }
+
+        public IFile try_parse_file(string path) {
             path = path.Replace("/", "\\");
             var contains_drive_prefix = path.StartsWith(root_, StringComparison.CurrentCultureIgnoreCase);
             var full = contains_drive_prefix ? path : root_ + path;
@@ -63,10 +81,10 @@ namespace external_drive_lib.windows
                 var fi = new FileInfo(full);
                 return new win_file(fi.DirectoryName, fi.Name);
             }
-            throw new exception("not an existing file " + full);
+            return null;
         }
 
-        public IFolder parse_folder(string path) {
+        public IFolder try_parse_folder(string path) {
             path = path.Replace("/", "\\");
             var contains_drive_prefix = path.StartsWith(root_, StringComparison.CurrentCultureIgnoreCase);
             var full = contains_drive_prefix ? path : root_ + path;
@@ -74,7 +92,7 @@ namespace external_drive_lib.windows
                 var fi = new DirectoryInfo(full);
                 return new win_folder(fi.Parent.FullName, fi.Name);
             }
-            throw new exception("not an existing folder " + full);
+            return null;
         }
 
         public IFolder create_folder(string path) {
