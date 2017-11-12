@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -87,10 +88,33 @@ namespace console_test
             Console.WriteLine("Copying all photos you took on your first Android device");
             var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
             if (camera != null) {
+                DateTime start = DateTime.Now;
                 var temp = new_temp_path();
                 Console.WriteLine("Copying to " + temp);
                 bulk.bulk_copy_sync(camera.files, temp);
-                Console.WriteLine("Copying to " + temp + " - complete");
+                Console.WriteLine("Copying to " + temp + " - complete, took " + (int)(DateTime.Now - start).TotalMilliseconds + " ms" );
+            }
+            else 
+                Console.WriteLine("No Android Drive Connected");
+        }
+
+        /* Note: this shows progress (that is, after each copied file). However, it will be slower than the bulk copy
+         * (bulk copying can do some optimizations, but for now, you don't kwnow the progress)
+         */
+        static void example_copy_all_camera_photos_to_hdd_with_progress() {
+            Console.WriteLine("Copying all photos you took on your first Android device");
+            var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
+            if (camera != null) {
+                var temp = new_temp_path();
+                DateTime start = DateTime.Now;
+                var files = camera.files.ToList();
+                var idx = 0;
+                foreach (var file in files) {
+                    Console.Write(file.full_path + " to " + temp + "(" + ++idx + " of " + files.Count + ")");
+                    file.copy_sync(temp);
+                    Console.WriteLine(" ...done");
+                }
+                Console.WriteLine("Copying to " + temp + " - complete, took " + (int)(DateTime.Now - start).TotalMilliseconds + " ms" );
             }
             else 
                 Console.WriteLine("No Android Drive Connected");
@@ -202,11 +226,16 @@ namespace console_test
             example_traverse_first_portable_drive(dump_file_count_only);
 
             example_enumerate_all_android_albums();
-            example_copy_all_camera_photos_to_hdd();                    
+            example_copy_all_camera_photos_to_hdd();
+            example_copy_all_camera_photos_to_hdd_with_progress();
 
             example_copy_latest_photo_to_hdd();
             example_find_biggest_photo_in_size();
             example_find_biggest_file_on_first_portable_device();
+
+            Console.WriteLine();
+            Console.WriteLine("Press any key...");
+            Console.ReadKey();
         }
     }
 }

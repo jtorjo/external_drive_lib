@@ -47,6 +47,10 @@ removed logging from the lib;
 
 1.2.1
 - added IDrive.is_available
-- added examples (in console_test)
+- added examples
 - erase all former temp dirs 
 - added try_parse_file/try_parse_folder
+
+1.2.2
+- added example_copy_all_camera_photos_to_hdd_with_progress
+- added ReadKey() at the end of the console test

@@ -8,11 +8,12 @@ add Terminology section
 
 
 
-
 todo:
-make it work for all external drives (even CDroms etc)
 the progress dialog -> even if moved away from screen,if the user selects it via taskbar, presses Enter or Esc, it will cancel. i should disable the "cancel" button
+bulk copy - have a callback to be called on each copied file
 implement copy on folders
 bulk_copy: i should check if destination files exist, and auto-delete them. otherwise, i'll see the awesome "copy and replace" dialog.
 try_parse_folder , try_parse_file ?so that i don't get exception when calling and file/folder doesn't exist
 implement move()
+
+make it work for all external drives (even CDroms etc)
