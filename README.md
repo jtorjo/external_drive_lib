@@ -35,7 +35,7 @@ Copy the last taken photo, to its parent folder
     var last_file = camera.files.OrderBy(f => -f.last_write_time.Ticks).First();
     last_file.copy_sync(camera.parent.full_path);
 
-If you want more info, I've written a rather large article on [codeproject](http://www.codeproject.com)
+If you want more info, I've written a rather large article on [codeproject](https://www.codeproject.com/Articles/1213684/External-Drives-Library-Part-Dealing-with-USB-Conn)
 
 Projects using external_drive_lib:
 * [Phot-Awe](http://www.phot-awe.com)
