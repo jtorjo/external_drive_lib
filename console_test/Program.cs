@@ -84,14 +84,17 @@ namespace console_test
                 Console.WriteLine("No Android Drive Connected");
         }
 
-        static void example_copy_all_camera_photos_to_hdd() {
+        // 1.2.4+ we have callbacks - called after each file is copied
+        static void example_bulk_copy_all_camera_photos_to_hdd() {
             Console.WriteLine("Copying all photos you took on your first Android device");
             var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
             if (camera != null) {
                 DateTime start = DateTime.Now;
                 var temp = new_temp_path();
                 Console.WriteLine("Copying to " + temp);
-                bulk.bulk_copy_sync(camera.files, temp);
+                bulk.bulk_copy_sync(camera.files.ToList(), temp, (f, i, c) => {
+                    Console.WriteLine(f + " to " + temp + "(" + (i+1) + " of " + c + ")");            
+                });
                 Console.WriteLine("Copying to " + temp + " - complete, took " + (int)(DateTime.Now - start).TotalMilliseconds + " ms" );
             }
             else 
@@ -234,15 +237,14 @@ namespace console_test
         {
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
 
+            example_show_all_portable_drives();
             example_wait_for_first_connected_device();
 
-            example_show_all_portable_drives();
-
-            bool dump_file_count_only = true;
-            example_traverse_first_portable_drive(dump_file_count_only);
+            //bool dump_file_count_only = true;
+            //example_traverse_first_portable_drive(dump_file_count_only);
 
             example_enumerate_all_android_albums();
-            example_copy_all_camera_photos_to_hdd();
+            example_bulk_copy_all_camera_photos_to_hdd();
             example_copy_all_camera_photos_to_hdd_with_progress();
 
             example_copy_latest_photo_to_hdd();

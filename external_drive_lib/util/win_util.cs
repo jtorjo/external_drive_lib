@@ -48,9 +48,9 @@ namespace external_drive_lib.windows
                                                      System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { folder_path });
         }
 
-
         private static long wait_for_win_file_size(string file_name, long size, int retry_count) {
-            long cur_size = -1;
+            // 1.2.4+ note - that 0 can be a valid file size, meaning we're in the process of copying the file
+            long cur_size = 0;
             for (int i = 0; i < retry_count && cur_size < size; ++i) {
                 if ( File.Exists(file_name))
                     try {
@@ -58,15 +58,22 @@ namespace external_drive_lib.windows
                     } catch {
                     }
                 if ( cur_size < size)
-                    Thread.Sleep(25);
+                    Thread.Sleep(50);
             }
             return cur_size;
         }
-        public static void wait_for_win_copy_complete(long size, string file_name) {
-            long last_size = -1;
+        public static void wait_for_win_copy_complete(long size, string file_name, int max_retry = 25, int max_retry_first_time = 100) {
+            // 1.2.4+ 0 can be a valid size, that can mean we started copying
+            long last_size = 0;
+            // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
+            // the copy process can take a while to start...
+            last_size = wait_for_win_file_size(file_name, size, max_retry_first_time);
+            if ( last_size <= 0)
+                throw new exception("File may have not been copied - " + file_name + " got 0, expected " + size);
+
             // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
             while (last_size < size) {
-                var cur_size = wait_for_win_file_size(file_name, size, 10);
+                var cur_size = wait_for_win_file_size(file_name, size, max_retry);
                 if ( cur_size == last_size)
                     throw new exception("File may have not been copied - " + file_name + " got " + cur_size + ", expected " + size);
                 last_size = cur_size;
@@ -81,21 +88,19 @@ namespace external_drive_lib.windows
                 } catch {
                 }
                 if ( cur_size < size)
-                    Thread.Sleep(25);
+                    Thread.Sleep(50);
             }
             return cur_size;
         }
-        public static void wait_for_portable_copy_complete(string full_file_name, long size) {
+        public static void wait_for_portable_copy_complete(string full_file_name, long size, int max_retry = 25, int max_retry_first_time = 100) {
             long last_size = -1;
             // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
-            const int max_rety = 25;
-            const int max_rety_first_time = 100;
             // the copy process can take a while to start...
-            last_size = wait_for_android_file_size(full_file_name, size, max_rety_first_time);
+            last_size = wait_for_android_file_size(full_file_name, size, max_retry_first_time);
             if ( last_size < 0)
                 throw new exception("File may have not been copied - " + full_file_name + " got -1, expected " + size);
             while (last_size < size) {
-                var cur_size = wait_for_android_file_size(full_file_name, size, max_rety);
+                var cur_size = wait_for_android_file_size(full_file_name, size, max_retry);
                 if ( cur_size == last_size)
                     throw new exception("File may have not been copied - " + full_file_name + " got " + cur_size + ", expected " + size);
                 last_size = cur_size;
