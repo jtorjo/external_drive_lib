@@ -42,6 +42,11 @@ namespace external_drive_lib.portable
 
             if ( usb_util.portable_path_to_vidpid(root_path_, ref vid_pid_))
                 unique_id_ = vid_pid_;
+            // 1.2.3+ - sometimes, we can't match vidpid to unique id (for instance, iphones). in this case, do our best and just
+            //          use the unique id from the path itself
+            var unique_id_from_path = usb_util.unique_id_from_root_path(root_path_);
+            if (unique_id_from_path != "")
+                unique_id_ = unique_id_from_path;
 
             find_drive_type();
         }
@@ -49,7 +54,12 @@ namespace external_drive_lib.portable
         private void find_drive_type() {
             drive_type_ = drive_type.portable;
 
-            bool is_android = false, is_phone = false, is_tablet = false;
+            bool is_android = false, is_phone = false, is_tablet = false, is_apple = false, is_iphone = false;
+
+            if (friendly_name_.ToLower().StartsWith("apple"))
+                is_apple = true;
+            if (friendly_name_.ToLower().Contains(" iphone"))
+                is_iphone = true;
 
             try {
                 if (root_.IsFolder) {
@@ -73,7 +83,9 @@ namespace external_drive_lib.portable
                 else if (is_tablet)
                     drive_type_ = is_android ? drive_type.android_tablet : drive_type.ipad;
                 else if (is_android)
-                    drive_type_ = drive_type.android;
+                    drive_type_ = drive_type.android_unknown;
+                if (is_apple)
+                    drive_type_ = is_iphone ? drive_type.iphone : drive_type.iOS_unknown;
             } catch {
                 // just leave drive type as portable
             }
@@ -92,7 +104,16 @@ namespace external_drive_lib.portable
             try {
                 if (connected_via_usb) {
                     var items = (root_.GetFolder as Folder).Items();
-                    return items.Count >= 1;
+                    var has_items = items.Count >= 1;
+
+                    if (drive_type_.is_iOS() && has_items) {
+                        // iphone - even if connected, until we allow "Read/Write" files, it won't be available
+                        // so, we might see "Internal Storage", but that will be completely empty
+                        var dcim = try_parse_folder("*/dcim");
+                        return dcim != null;
+                    }
+
+                    return has_items;
                 }
             } catch {
             }

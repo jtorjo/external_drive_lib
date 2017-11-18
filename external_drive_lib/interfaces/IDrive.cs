@@ -9,12 +9,13 @@ namespace external_drive_lib.interfaces
     public enum drive_type {
         portable,
         // if this, we're not sure if it's phone or tablet or whatever
-        android, 
+        android_unknown, 
         // it's an android phone
         android_phone, 
         // it's an android tablet
         android_tablet, 
 
+        iOS_unknown,
         iphone,
         ipad,
 
@@ -34,15 +35,16 @@ namespace external_drive_lib.interfaces
 
     public static class drive_type_os {
         public static bool is_android(this drive_type dt) {
-            return dt == drive_type.android || dt == drive_type.android_phone || dt == drive_type.android_tablet;
+            return dt == drive_type.android_unknown || dt == drive_type.android_phone || dt == drive_type.android_tablet;
         }
 
         public static bool is_portable(this drive_type dt) {
-            return dt == drive_type.android || dt == drive_type.android_phone || dt == drive_type.android_tablet || dt == drive_type.portable;
+            return dt == drive_type.android_unknown || dt == drive_type.android_phone || dt == drive_type.android_tablet || dt == drive_type.portable
+                || dt == drive_type.iphone || dt == drive_type.ipad || dt == drive_type.iOS_unknown;
         }
 
         public static bool is_iOS(this drive_type dt) {
-            return dt == drive_type.iphone;
+            return dt == drive_type.iphone || dt == drive_type.ipad || dt == drive_type.iOS_unknown;
         }
     };
 

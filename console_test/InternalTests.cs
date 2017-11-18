@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using external_drive_lib;
 using external_drive_lib.bulk;
 using external_drive_lib.interfaces;
+using external_drive_lib.monitor;
+using external_drive_lib.util;
 
 namespace console_test
 {
@@ -305,5 +307,30 @@ namespace console_test
             drive_root.inst.parse_file(dest_file + ".renamed").copy_async(temp_dir2);
             Thread.Sleep(15000);
         }
+
+        private static void add_dump_info(Dictionary<string, string> properties) {
+            Console.WriteLine("---------- ADDED");
+            foreach ( var p in properties)
+                Console.WriteLine(p.Key + " [=] " + p.Value);
+        }
+        private static void del_dump_info(Dictionary<string, string> properties) {
+            Console.WriteLine("---------- DEL");
+            foreach ( var p in properties)
+                Console.WriteLine(p.Key + " [=] " + p.Value);
+        }
+        public static void monitor_usb_devices() {
+            var md = new monitor_devices() {added_device = add_dump_info, deleted_device = del_dump_info};
+            //md.monitor("Win32_USBHub");
+            md.monitor("Win32_USBControllerDevice");
+        }
+
+
+        public static void print_uniqueid_from_path() {
+            var wce_root_path = "::{20D04FE0-3AEA-1069-A2D8-08002B30309D}\\\\\\\\\\\\?\\\\activesyncwpdenumerator#umb#2&306b293b&2&aceecamez1500windowsmobile5#{6ac27878-a6fa-4155-ba85-f98f491d4f33}";
+            Console.WriteLine(usb_util.unique_id_from_root_path(wce_root_path));
+        }
+
     }
+
+
 }

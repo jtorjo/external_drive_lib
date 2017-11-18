@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using external_drive_lib.interfaces;
@@ -8,7 +9,7 @@ using Shell32;
 
 namespace external_drive_lib.util
 {
-    static class portable_util
+    internal static class portable_util
     {
 
         public static void enumerate_children(portable_drive drive, FolderItem fi, List<IFolder> folders, List<IFile> files) {
@@ -81,6 +82,9 @@ namespace external_drive_lib.util
             }
             return usb_drives;
         }
+
+
+
 
     }
 }

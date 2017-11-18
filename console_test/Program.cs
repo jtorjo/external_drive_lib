@@ -28,7 +28,7 @@ namespace console_test
             var portable_drives = drive_root.inst.drives.Where(d => d.type.is_portable()).ToList();
             foreach ( var pd in portable_drives)
                 Console.WriteLine("Drive Unique ID: " + pd.unique_id + ", friendly name=" + pd.friendly_name 
-                    + "type=" + pd.type + ", available=" + pd.is_available());
+                    + ", type=" + pd.type + ", available=" + pd.is_available());
             if ( portable_drives.Count < 1)
                 Console.WriteLine("No Portable Drives connected");
         }
@@ -214,11 +214,27 @@ namespace console_test
                 Console.WriteLine("No Portable Drives connected");
         }
 
-
+        static void example_wait_for_first_connected_device() {
+            Console.WriteLine("Waiting for you to plug the first portable device");
+            while (true) {
+                var portable_drives = drive_root.inst.drives.Where(d => d.type.is_portable());
+                if (portable_drives.Any())
+                    break;
+            }
+            Console.WriteLine("Waiting for you to make the device availble");
+            while (true) {
+                var d = drive_root.inst.try_get_drive("[p0]:/");
+                if (d != null && d.is_available())
+                    break;
+            }
+            example_show_all_portable_drives();
+        }
 
         static void Main(string[] args)
         {
             log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
+
+            example_wait_for_first_connected_device();
 
             example_show_all_portable_drives();
 

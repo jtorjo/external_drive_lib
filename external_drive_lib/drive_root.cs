@@ -24,7 +24,9 @@ namespace external_drive_lib
 
         private bool auto_close_win_dialogs_ = true;
 
-        private monitor_devices monitor_devices_ = new monitor_devices ();
+        // note: not all devices register as USB hubs, some only register as controller devices
+        private monitor_devices monitor_usbhub_devices_ = new monitor_devices ();
+        private monitor_devices monitor_controller_devices_ = new monitor_devices ();
         
         private Dictionary<string,string> vidpid_to_unique_id_ = new Dictionary<string, string>();
 
@@ -40,12 +42,28 @@ namespace external_drive_lib
                     }
                 }
             }
+            var existing_controller_devices = find_devices.find_objects("Win32_USBControllerDevice");
+            foreach (var device in existing_controller_devices) {
+                if (device.ContainsKey("Dependent")) {
+                    var device_id = device["Dependent"];
+                    string vid_pid = "", unique_id = "";
+                    if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
+                        lock(this)
+                            if ( !vidpid_to_unique_id_.ContainsKey(vid_pid))
+                                vidpid_to_unique_id_.Add(vid_pid, unique_id);
+                    }
+                }
+            }
 
             refresh();
 
-            monitor_devices_.added_device += device_added;
-            monitor_devices_.deleted_device += device_removed;
-            monitor_devices_.monitor("Win32_USBHub");
+            monitor_usbhub_devices_.added_device += device_added;
+            monitor_usbhub_devices_.deleted_device += device_removed;
+            monitor_usbhub_devices_.monitor("Win32_USBHub");
+
+            monitor_controller_devices_.added_device += device_added_controller;
+            monitor_controller_devices_.deleted_device += device_removed_controller;
+            monitor_controller_devices_.monitor("Win32_USBControllerDevice");
 
             new Thread(win32_util.check_for_dialogs_thread) {IsBackground = true}.Start();
         }
@@ -56,29 +74,59 @@ namespace external_drive_lib
         }
 
 
+
+        private void on_new_device(string vid_pid, string unique_id) {
+            lock (this) {
+                if (vidpid_to_unique_id_.ContainsKey(vid_pid))
+                    vidpid_to_unique_id_[vid_pid] = unique_id;
+                else
+                    vidpid_to_unique_id_.Add(vid_pid, unique_id);
+            }
+            refresh_portable_unique_ids();
+            var already_a_drive = false;
+            lock (this) {
+                var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
+                if (ad != null) {
+                    ad.connected_via_usb = true;
+                    already_a_drive = true;
+                }
+            }
+            if (!already_a_drive)
+                win_util.postpone(() => monitor_for_drive(vid_pid, 0), 50);            
+        }
+
+        private void on_deleted_device(string vid_pid, string unique_id) {            
+            lock (this) {
+                var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
+                if (ad != null)
+                    ad.connected_via_usb = false;
+            }
+            refresh();
+        }
+
+        private void device_added_controller(Dictionary<string, string> properties) {
+            if (properties.ContainsKey("Dependent")) {
+                var device_id = properties["Dependent"];
+                string vid_pid = "", unique_id = "";
+                if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
+                    on_new_device(vid_pid, unique_id);
+            } 
+        }
+        private void device_removed_controller(Dictionary<string, string> properties) {
+            if (properties.ContainsKey("Dependent")) {
+                var device_id = properties["Dependent"];
+                string vid_pid = "", unique_id = "";
+                if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
+                    on_deleted_device(vid_pid, unique_id);
+            } 
+        }
+
         private void device_added(Dictionary<string, string> properties) {
             if (properties.ContainsKey("PNPDeviceID")) {
                 var device_id = properties["PNPDeviceID"];
                 string vid_pid = "", unique_id = "";
-                if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
-                    lock (this) {
-                        if (vidpid_to_unique_id_.ContainsKey(vid_pid))
-                            vidpid_to_unique_id_[vid_pid] = unique_id;
-                        else
-                            vidpid_to_unique_id_.Add(vid_pid, unique_id);
-                    }
-                    refresh_android_unique_ids();
-                    var already_a_drive = false;
-                    lock (this) {
-                        var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
-                        if (ad != null) {
-                            ad.connected_via_usb = true;
-                            already_a_drive = true;
-                        }
-                    }
-                    if (!already_a_drive)
-                        win_util.postpone(() => monitor_for_drive(vid_pid, 0), 50);
-                }
+                if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
+                    on_new_device(vid_pid, unique_id);
             } else {
                 // added usb device with no PNPDeviceID
                 Debug.Assert(false);
@@ -93,7 +141,7 @@ namespace external_drive_lib
             if (found != null) 
                 refresh();
             else if (idx < MAX_RETRIES)
-                win_util.postpone(() => monitor_for_drive(vidpid, idx + 1), 50);
+                win_util.postpone(() => monitor_for_drive(vidpid, idx + 1), 100);
             else {
                 // "can't find usb connected drive " + vidpid
                 Debug.Assert(false);
@@ -104,14 +152,8 @@ namespace external_drive_lib
             if (properties.ContainsKey("PNPDeviceID")) {
                 var device_id = properties["PNPDeviceID"];
                 string vid_pid = "", unique_id = "";
-                if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
-                    lock (this) {
-                        var ad = drives_.FirstOrDefault(d => d.unique_id == unique_id) as portable_drive;
-                        if (ad != null)
-                            ad.connected_via_usb = false;
-                    }
-                    refresh();
-                }
+                if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
+                    on_deleted_device(vid_pid, unique_id);                
             } else {
                 // deleted usb device with no PNPDeviceID
                 Debug.Assert(false);
@@ -147,18 +189,20 @@ namespace external_drive_lib
             lock (this) {
                 drives_ = drives_now;
             }
-            refresh_android_unique_ids();
+            refresh_portable_unique_ids();
         }
 
-        private void refresh_android_unique_ids() {
+        private void refresh_portable_unique_ids() {
             lock(this)
                 foreach ( portable_drive ad in drives_.OfType<portable_drive>())
                     if ( vidpid_to_unique_id_.ContainsKey(ad.vid_pid))
                         ad.unique_id = vidpid_to_unique_id_[ad.vid_pid];
         }
 
-        // As drive name, use any of: "{<unique_id>}:", "<drive-name>:", "[a<android-drive-index>]:", "[p<portable-index>]", "[d<drive-index>]:"
+        // As drive name, use any of: 
+        // "{<unique_id>}:", "<drive-name>:", "[a<android-drive-index>]:", "[i<ios-index>]:", "[p<portable-index>]:", "[d<drive-index>]:"
         public IDrive try_get_drive(string drive_prefix) {
+            drive_prefix = drive_prefix.Replace("/", "\\");
             // case insensitive
             foreach ( var d in drives)
                 if (string.Compare(d.root_name, drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0 ||
@@ -186,13 +230,22 @@ namespace external_drive_lib
                             return android[idx];
                     }                    
                 }
+                else if (drive_prefix.StartsWith("i", StringComparison.CurrentCultureIgnoreCase)) {
+                    drive_prefix = drive_prefix.Substring(1);
+                    var idx = 0;
+                    if (int.TryParse(drive_prefix, out idx)) {
+                        var ios = drives.Where(d => d.type.is_iOS()).ToList();
+                        if (ios.Count > idx)
+                            return ios[idx];
+                    }                    
+                }
                 else if (drive_prefix.StartsWith("p", StringComparison.CurrentCultureIgnoreCase)) {
                     drive_prefix = drive_prefix.Substring(1);
                     var idx = 0;
                     if (int.TryParse(drive_prefix, out idx)) {
-                        var android = drives.Where(d => d.type.is_portable()).ToList();
-                        if (android.Count > idx)
-                            return android[idx];
+                        var portable = drives.Where(d => d.type.is_portable()).ToList();
+                        if (portable.Count > idx)
+                            return portable[idx];
                     }                    
                 }
             }
