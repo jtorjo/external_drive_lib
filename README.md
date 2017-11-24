@@ -4,7 +4,7 @@
 
 As soon as you plug in a Portable Drive (Phone/Tablet), it will show up in the available drives, here:
 
-    drive_root.inst.all_drives
+    drive_root.inst.drives
 
 Enumerate all the pictures you've taken (a0 - first android drive)
 
