@@ -20,8 +20,6 @@ namespace console_test
      */
     static class InternalTests
     {
-        private static log4net.ILog logger = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
         static string new_temp_path() {
             var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
             Directory.CreateDirectory(temp_dir);
@@ -268,8 +266,8 @@ namespace console_test
             Debug.Assert(first_file.drive.is_connected());
             Debug.Assert(camera_folder.drive.is_connected());
 
-            logger.Debug("camera file " + first_file.size);
-            logger.Debug("Disconnect the phone now.");
+            Console.WriteLine("camera file " + first_file.size);
+            Console.WriteLine("Disconnect the phone now.");
             Console.ReadLine();
             Debug.Assert(!camera_folder.exists);
             Debug.Assert(!first_file.exists);
@@ -284,45 +282,30 @@ namespace console_test
         }
 
         private static void test_long_android_copy_async(string file_name) {
-            logger.Debug("android to win");
+            Console.WriteLine("android to win");
             drive_root.inst.auto_close_win_dialogs = false;
             var temp_dir = new_temp_path();
             var src_file = drive_root.inst.parse_file(file_name);
             src_file.copy_async(temp_dir);
             Thread.Sleep(15000);
 
-            logger.Debug("android to android");
+            Console.WriteLine("android to android");
             drive_root.inst.auto_close_win_dialogs = false;
             src_file.copy_async("[a0]:/phone/dcim");
             Thread.Sleep(15000);
 
-            logger.Debug("win to android");
+            Console.WriteLine("win to android");
             var dest_file = temp_dir + "\\" + src_file.name;
             File.Move(dest_file, dest_file + ".renamed");
             drive_root.inst.parse_file(dest_file + ".renamed").copy_async("[a0]:/phone/dcim");
             Thread.Sleep(15000);
 
-            logger.Debug("win to win");
+            Console.WriteLine("win to win");
             var temp_dir2 = new_temp_path();
             drive_root.inst.parse_file(dest_file + ".renamed").copy_async(temp_dir2);
             Thread.Sleep(15000);
         }
 
-        private static void add_dump_info(Dictionary<string, string> properties) {
-            Console.WriteLine("---------- ADDED");
-            foreach ( var p in properties)
-                Console.WriteLine(p.Key + " [=] " + p.Value);
-        }
-        private static void del_dump_info(Dictionary<string, string> properties) {
-            Console.WriteLine("---------- DEL");
-            foreach ( var p in properties)
-                Console.WriteLine(p.Key + " [=] " + p.Value);
-        }
-        public static void monitor_usb_devices() {
-            var md = new monitor_devices() {added_device = add_dump_info, deleted_device = del_dump_info};
-            //md.monitor("Win32_USBHub");
-            md.monitor("Win32_USBControllerDevice");
-        }
 
 
         public static void print_uniqueid_from_path() {

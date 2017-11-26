@@ -21,6 +21,10 @@ namespace external_drive_lib.util
         [DllImport("user32")]
         private static extern bool MoveWindow(IntPtr hWnd,int X,int Y,int nWidth,int nHeight,bool bRepaint );
 
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool EnableWindow(IntPtr hWnd,bool bEnable);
+
         private static string window_class_name(IntPtr hWnd)
         {
             int result = 0;
@@ -47,15 +51,19 @@ namespace external_drive_lib.util
                             var class_name = window_class_name(w);
                             if (class_name == "#32770") {
                                 var children = find_windows.get_child_windows(w);
-                                var class_names = children.Select(window_class_name).ToList();
-                                var is_windows_progress_dialog = class_names.Any(c => c == "DirectUIHWND") && class_names.Any(c => c == "msctls_progress32");
+                                var class_names = children.Select(c => new Tuple<IntPtr, string>(c,window_class_name(c))).ToList();
+                                var is_windows_progress_dialog = class_names.Any(c => c.Item2 == "DirectUIHWND") && class_names.Any(c => c.Item2 == "msctls_progress32");
                                 if (is_windows_progress_dialog) {
                                     // found a shell copy/move/delete window
-                                    // this would minimize it
-                                    //ShowWindow(w, 6);
-                                    // hiding the window doesn't work - so, just move it outside the screen
+
+                                    // 1.2.5+ trial and error - seems that disabling the window ends up hiding it from screen as well
+                                    // however, I'm still moving it, just a precaution
+                                    //
+                                    // note: I'm disabling the window, so that the user can't press Esc/Enter to cancel the process
+                                    EnableWindow(w, false);
+
+                                    // hiding the window doesn't work, minimizing would be useless - so, just move it outside the screen
                                     MoveWindow(w, -100000, 10, 600, 300, false);
-                                    //logger.Debug("closed " + w);
                                 }
                             }
                         }

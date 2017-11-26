@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib.monitor;
 
@@ -175,6 +176,30 @@ namespace external_drive_lib.util
 
             // if result it's too small, there was something wrong
             return ( result.Length > 4) ? result :  "";
+        }
+
+
+        private static void on_added_device_dump_info(Dictionary<string,string> properties)
+        {
+            Console.WriteLine("---------- ADDED DEVICE");
+            foreach(var p in properties)
+                Console.WriteLine(p.Key + " [=] " + p.Value);
+        }
+        private static void on_deleted_device_dump_info(Dictionary<string,string> properties)
+        {
+            Console.WriteLine("---------- DEL DEVICE");
+            foreach(var p in properties)
+                Console.WriteLine(p.Key + " [=] " + p.Value);
+        }
+        /* example: 
+         * monitor_usb_devices("Win32_USBControllerDevice");
+         * monitor_usb_devices("Win32_USBHub");
+         */
+        public static void monitor_usb_devices(string usb_class)
+        {
+            var md = new monitor_devices() { added_device = on_added_device_dump_info,deleted_device = on_deleted_device_dump_info };
+            md.monitor(usb_class);
+            Thread.Sleep(2000000);
         }
     }
 }

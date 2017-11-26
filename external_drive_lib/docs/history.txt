@@ -62,3 +62,9 @@ removed logging from the lib;
 
 1.2.4
 - added bulk_copy callbacks
+
+1.2.5
+the progress dialog -> even if moved away from screen,if the user selects it via taskbar, presses Enter or Esc, it will cancel. i should disable the "cancel" button
+add test to find out when a usb device is connected/disconnected : usb_util.monitor_usb_devices
+temporary dir -> moved into Local\Temp instead of Roaming
+

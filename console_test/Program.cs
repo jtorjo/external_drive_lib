@@ -18,7 +18,11 @@ namespace console_test
     class Program
     {
         static string new_temp_path() {
-            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\external_drive_temp\\test-" + DateTime.Now.Ticks;
+            var temp_dir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\";
+            if(Directory.Exists(temp_dir + "Temp"))
+                temp_dir += "Temp\\";
+            temp_dir += "external_drive_temp\\temp-" + DateTime.Now.Ticks;
+
             Directory.CreateDirectory(temp_dir);
             return temp_dir;
         }
@@ -80,6 +84,16 @@ namespace console_test
                 foreach ( var folder in drive_root.inst.parse_folder("[a0]:/*/dcim").child_folders)
                     Console.WriteLine(folder.name + " - " + folder.files.Count() + " files");
             }
+            else 
+                Console.WriteLine("No Android Drive Connected");
+        }
+
+        static void example_enumerate_all_camera_pics() {
+            Console.WriteLine("Enumerating all photos from Camera folder");
+            var camera = drive_root.inst.try_parse_folder("[a0]:/*/dcim/camera");
+            if ( camera != null)
+                foreach ( var f in camera.files)
+                    Console.WriteLine(f.name + ", " + f.size);
             else 
                 Console.WriteLine("No Android Drive Connected");
         }
@@ -235,14 +249,13 @@ namespace console_test
 
         static void Main(string[] args)
         {
-            log4net.Config.XmlConfigurator.Configure( new FileInfo("console_test.exe.config"));
-
             example_show_all_portable_drives();
             example_wait_for_first_connected_device();
 
             //bool dump_file_count_only = true;
             //example_traverse_first_portable_drive(dump_file_count_only);
 
+            example_enumerate_all_camera_pics();
             example_enumerate_all_android_albums();
             example_bulk_copy_all_camera_photos_to_hdd();
             example_copy_all_camera_photos_to_hdd_with_progress();

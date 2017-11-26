@@ -1,19 +1,24 @@
 ﻿
 
-troubleshooting
-iphone section
-
-add Terminology section
-
-
+tell about files/folders (time consuming)
 
 
 
 
 todo:
-the progress dialog -> even if moved away from screen,if the user selects it via taskbar, presses Enter or Esc, it will cancel. i should disable the "cancel" button
+add Terminology section
+
+implement rename() on folders and on files
+
 implement copy on folders
 bulk_copy: i should check if destination files exist, and auto-delete them. otherwise, i'll see the awesome "copy and replace" dialog.
-implement move()
+           see what to do -> i should do this for all files BEFORE copy
+bulk_delete ?
+
+copy_options - throw if destination file already exists / make destfolder if not found /TOTHINK
+
+move() + bulk_move() -> the only reason i will have this is when moving into the same drive - that actually makes sense, because it could end up being very fast (instead of copy/delete)
+--- when moving : have full destination name, like "c:\temp\a.jpg" -> "d:\pics\cool.jpg". in this case, i should figure out which are just rename (that is, same folder),
+    and which are move to another folder + rename (and figure out if file already exists in destination folder)
 
 make it work for all external drives (even CDroms etc)
