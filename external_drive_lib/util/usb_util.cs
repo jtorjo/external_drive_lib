@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -86,6 +87,24 @@ namespace external_drive_lib.util
         public static List<string> get_all_portable_paths() {
             var portable_devices = portable_util.get_portable_connected_device_drives();
             return portable_devices.Select(d => d.Path).ToList();
+        }
+
+        public static List<string> get_all_paths_and_details() {
+            var portable_devices = portable_util.get_all_connected_device_drives();
+            var details = new List<string>();
+            foreach (var pd in portable_devices) {
+                var path = pd.Path;
+                string vid_pid = "", unique_id = "";
+                if ( !File.Exists(path) && !Directory.Exists(path))
+                    if ( usb_util.portable_path_to_vidpid(path, ref vid_pid))
+                        unique_id = vid_pid;
+                var unique_id_from_path = usb_util.unique_id_from_root_path(path);
+                if (unique_id_from_path != "")
+                    unique_id = unique_id_from_path;
+                var details_now = path  + " name=" + pd.Name + ", type=" + pd.Type + ", vidpid=" + vid_pid + ", unique_id=" + unique_id;
+                details.Add(details_now);
+            }
+            return details;
         }
 
         // for testing - run into problems? please run this:

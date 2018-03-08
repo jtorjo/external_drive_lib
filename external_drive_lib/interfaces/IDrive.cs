@@ -29,8 +29,15 @@ namespace external_drive_lib.interfaces
         // it's the Windows HDD 
         internal_hdd,
 
-        // FIXME this is to be treated read-only!!!
+        // note: this is to be treated read-only!!!
         cd_rom,
+
+        usb_stick,
+
+        unknown,
+
+        // mapped drive - could be very likely slow
+        network,
     }
 
     public static class drive_type_os {
@@ -39,7 +46,8 @@ namespace external_drive_lib.interfaces
         }
 
         public static bool is_portable(this drive_type dt) {
-            return dt == drive_type.android_unknown || dt == drive_type.android_phone || dt == drive_type.android_tablet || dt == drive_type.portable
+            return dt == drive_type.android_unknown || dt == drive_type.android_phone 
+                || dt == drive_type.android_tablet || dt == drive_type.portable
                 || dt == drive_type.iphone || dt == drive_type.ipad || dt == drive_type.iOS_unknown;
         }
 

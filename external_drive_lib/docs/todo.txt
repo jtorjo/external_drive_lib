@@ -1,6 +1,9 @@
 ﻿
+explain that works winxp+ ?
+see about wpd https://msdn.microsoft.com/en-us/library/dd389005(v=vs.85).aspx ,  https://msdn.microsoft.com/library/b3833a11-631d-4860-867f-a611c9362dae
 
-tell about files/folders (time consuming)
+recognize cd/dvd, external hdd, usb stick, sd card
+
 
 
 

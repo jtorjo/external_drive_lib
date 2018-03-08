@@ -1,4 +1,11 @@
 ﻿
+1.2.6
+I find external drives: usb sticks/sd cards/external hdds correctly
+
+
+
+
+
 1.0.1a
 added copy_sync/del_sync - not finished
 

@@ -83,6 +83,17 @@ namespace external_drive_lib.util
             return usb_drives;
         }
 
+        // for testing
+        public static List<FolderItem> get_all_connected_device_drives() {
+            var drives = new List<FolderItem>();
+
+            foreach (FolderItem fi in get_my_computer().Items()) {
+                var path = fi.Path;
+                drives.Add(fi);
+            }
+            return drives;
+        }
+
 
 
 

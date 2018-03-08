@@ -37,6 +37,13 @@ namespace console_test
                 Console.WriteLine("No Portable Drives connected");
         }
 
+        static void example_show_all_drives() {
+            Console.WriteLine("Enumerating Drives:");
+            foreach ( var pd in drive_root.inst.drives)
+                Console.WriteLine("Drive Unique ID: " + pd.unique_id + ", friendly name=" + pd.friendly_name 
+                                  + ", type=" + pd.type + ", available=" + pd.is_available());
+        }
+
         static string files_count_suffix(IEnumerable<IFile> files) {
             var count = files.Count();
             var suffix = count > 0 ? " - " + count + " files" : "";
@@ -247,10 +254,13 @@ namespace console_test
             example_show_all_portable_drives();
         }
 
-        static void Main(string[] args)
-        {
+        static void Main(string[] args) {
+//            foreach ( var details in usb_util.get_all_paths_and_details())
+  //              Console.WriteLine(details);
+            example_show_all_drives();
             example_show_all_portable_drives();
             example_wait_for_first_connected_device();
+
 
             //bool dump_file_count_only = true;
             //example_traverse_first_portable_drive(dump_file_count_only);
