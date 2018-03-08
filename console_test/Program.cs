@@ -255,6 +255,7 @@ namespace console_test
         }
 
         static void Main(string[] args) {
+            //usb_util.monitor_usb_devices("Win32_LogicalDisk");
 //            foreach ( var details in usb_util.get_all_paths_and_details())
   //              Console.WriteLine(details);
             example_show_all_drives();

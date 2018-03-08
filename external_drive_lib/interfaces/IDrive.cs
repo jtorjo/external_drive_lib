@@ -20,10 +20,9 @@ namespace external_drive_lib.interfaces
         ipad,
 
         // SD Card
-        // FIXME can i know if it's read-only?
         sd_card, 
+
         // external hard drive
-        // FIXME can i know if it's read-only?
         external_hdd,
 
         // it's the Windows HDD 

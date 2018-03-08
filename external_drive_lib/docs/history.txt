@@ -1,4 +1,9 @@
 ﻿
+
+1.2.7
+external drvies (usb sticks/sd cards/external hdds) -> unique id shown correctly
+
+
 1.2.6
 I find external drives: usb sticks/sd cards/external hdds correctly
 

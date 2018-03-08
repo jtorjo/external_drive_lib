@@ -52,7 +52,15 @@ namespace external_drive_lib.windows
         }
 
         public string unique_id {
-            get { return root_; }
+            get {
+                if (drive_type_ != drive_type.cd_rom && drive_type_ != drive_type.internal_hdd) {
+                    var id = drive_root.inst.try_get_unique_id_for_drive(root_[0]);
+                    if (id != null)
+                        return id;
+                }
+
+                return root_;
+            }
         } 
         public string friendly_name {
             get { return root_; }

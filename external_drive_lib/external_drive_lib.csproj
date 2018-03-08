@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="monitor\monitor_usb_drives.cs" />
     <Compile Include="portable\portable_drive.cs" />
     <Compile Include="portable\portable_file.cs" />
     <Compile Include="portable\portable_folder.cs" />

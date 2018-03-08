@@ -28,6 +28,7 @@ namespace external_drive_lib
         private monitor_devices monitor_usbhub_devices_ = new monitor_devices ();
         private monitor_devices monitor_controller_devices_ = new monitor_devices ();
         
+        private monitor_usb_drives monitor_usb_drives_ = new monitor_usb_drives();
         private Dictionary<string,string> vidpid_to_unique_id_ = new Dictionary<string, string>();
 
         private drive_root() {
@@ -259,6 +260,10 @@ namespace external_drive_lib
             if ( d == null)
                 throw new exception("invalid drive " + drive_prefix);
             return d;
+        }
+
+        internal string try_get_unique_id_for_drive(char letter) {
+            return monitor_usb_drives_.unique_id(letter);
         }
 
         private void split_into_drive_and_folder_path(string path, out string drive, out string folder_or_file) {
