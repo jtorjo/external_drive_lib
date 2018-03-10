@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -70,5 +71,44 @@ namespace external_drive_lib.util
                 }
             }
         }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct FILETIME {
+            public uint dwLowDateTime;
+            public uint dwHighDateTime;
+        };
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct WIN32_FILE_ATTRIBUTE_DATA
+        {
+            public FileAttributes dwFileAttributes;
+            public FILETIME ftCreationTime;
+            public FILETIME ftLastAccessTime;
+            public FILETIME ftLastWriteTime;
+            public uint nFileSizeHigh;
+            public uint nFileSizeLow;
+        }
+        private enum GET_FILEEX_INFO_LEVELS {
+            GetFileExInfoStandard,
+            GetFileExMaxInfoLevel
+        }
+        [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetFileAttributesEx(string lpFileName, GET_FILEEX_INFO_LEVELS fInfoLevelId, out WIN32_FILE_ATTRIBUTE_DATA fileData);
+
+        // note: FileInfo.Length is too slow!
+        public static uint file_len(string file_name) {
+            WIN32_FILE_ATTRIBUTE_DATA fa;
+            if (GetFileAttributesEx(file_name, GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, out fa))
+                return fa.nFileSizeLow;
+            else if (File.Exists(file_name))
+                return (uint) new FileInfo(file_name).Length;
+            else
+                return 0;
+        }
+
     }
+
+
 }

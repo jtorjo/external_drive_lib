@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib.exceptions;
+using external_drive_lib.util;
 using Shell32;
 
 namespace external_drive_lib.windows
@@ -55,9 +56,9 @@ namespace external_drive_lib.windows
             // 1.2.4+ note - that 0 can be a valid file size, meaning we're in the process of copying the file
             long cur_size = 0;
             for (int i = 0; i < retry_count && cur_size < size; ++i) {
-                if ( File.Exists(file_name))
+                //if ( File.Exists(file_name))
                     try {
-                        cur_size = new FileInfo(file_name).Length;
+                        cur_size = win32_util.file_len(file_name);
                     } catch {
                     }
                 if ( cur_size < size)

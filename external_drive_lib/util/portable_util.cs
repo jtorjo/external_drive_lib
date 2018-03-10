@@ -73,8 +73,10 @@ namespace external_drive_lib.util
             foreach (FolderItem fi in get_my_computer().Items()) {
                 var path = fi.Path;
                 try {
-                    if (Directory.Exists(path) || path.Contains(":\\"))
-                        continue;
+                    // simplest way to know if drive is USB - starts with ::{
+                    if ( !path.StartsWith("::{"))
+                        if (Directory.Exists(path) || path.Contains(":\\"))
+                            continue;
                 } catch {
                     // a usb drive
                 }

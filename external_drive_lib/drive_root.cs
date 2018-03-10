@@ -207,7 +207,8 @@ namespace external_drive_lib
             // case insensitive
             foreach ( var d in drives)
                 if (string.Compare(d.root_name, drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0 ||
-                    string.Compare("{" + d.unique_id + "}:\\", drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0)
+                    string.Compare("{" + d.unique_id + "}:\\", drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0 ||
+                    string.Compare(d.unique_id , drive_prefix, StringComparison.CurrentCultureIgnoreCase) == 0)
                     return d;
 
             if (drive_prefix.StartsWith("[") && drive_prefix.EndsWith("]:\\")) {
