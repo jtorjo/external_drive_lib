@@ -254,7 +254,14 @@ namespace console_test
             example_show_all_portable_drives();
         }
 
+        static void example_delete_first_camera_file() {
+            var camera = drive_root.inst.parse_folder("[a0]:/*/dcim/camera").files.ToList();
+            if ( camera.Count > 0)
+                camera[0].delete_sync();
+        }
+
         static void Main(string[] args) {
+            example_delete_first_camera_file();
             //usb_util.monitor_usb_devices("Win32_LogicalDisk");
 //            foreach ( var details in usb_util.get_all_paths_and_details())
   //              Console.WriteLine(details);

@@ -112,7 +112,7 @@ namespace external_drive_lib.portable
             // even if we speicifically told it not to (via the copy options)
             //
             // so, if file exists, delete it first
-            var existing_name = (fi_.GetFolder as Folder).ParseName(souce_name);
+            var existing_name = (fi_.GetFolder as Folder).ParseName(souce_name) as FolderItem2;
             if ( existing_name != null)
                 win_util.delete_sync_portable_file(existing_name);
 

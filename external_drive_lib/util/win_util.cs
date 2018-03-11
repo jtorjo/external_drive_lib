@@ -24,8 +24,9 @@ namespace external_drive_lib.windows
             // FIXME create a task to erase all other folders (previously created that is)
             try {
                 // erase all the other created folders, if any
-                Directory.CreateDirectory(dir);
+                Directory.CreateDirectory(root_dir);
                 var prev_dirs = new DirectoryInfo(root_dir).EnumerateDirectories().Select(d => d.FullName).ToList();
+                Directory.CreateDirectory(dir);
                 Task.Run(() => delete_folders(prev_dirs));                
             } catch {
             }
@@ -114,7 +115,7 @@ namespace external_drive_lib.windows
 
 
         // note: this can only happen synchronously - otherwise, we'd end up deleting something from HDD before it was fully moved from the HDD
-        public static void delete_sync_portable_file(FolderItem fi) {
+        public static void delete_sync_portable_file(FolderItem2 fi) {
             Debug.Assert( !fi.IsFolder);
             // https://msdn.microsoft.com/en-us/library/windows/desktop/bb787874(v=vs.85).aspx
             var move_options = 4 | 16 | 512 | 1024;
@@ -122,7 +123,7 @@ namespace external_drive_lib.windows
                 var temp = win_util.temporary_root_dir();
                 var temp_folder = win_util.get_shell32_folder(temp);
                 var file_name = fi.Name;
-                var size = fi.Size;
+                var size = portable_util.portable_file_size(fi);
                 temp_folder.MoveHere(fi, move_options);
 
                 var name = temp + "\\" + file_name;
