@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace external_drive_lib.exceptions
 {
-    class exception : System.IO.IOException
+    class external_drive_libexception : System.IO.IOException
     {
-        public exception(string s) : base(s) {
+        public external_drive_libexception(string s) : base(s) {
             
         }
-        public exception(string s, Exception inner) : base(s, inner) {
+        public external_drive_libexception(string s, Exception inner) : base(s, inner) {
             
         }
     }

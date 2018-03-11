@@ -50,7 +50,7 @@
     <Compile Include="util\portable_util.cs" />
     <Compile Include="bulk\bulk.cs" />
     <Compile Include="drive_root.cs" />
-    <Compile Include="exceptions\exception.cs" />
+    <Compile Include="exceptions\external_drive_libexception.cs" />
     <Compile Include="interfaces\IDrive.cs" />
     <Compile Include="interfaces\IFile.cs" />
     <Compile Include="interfaces\IFolder.cs" />

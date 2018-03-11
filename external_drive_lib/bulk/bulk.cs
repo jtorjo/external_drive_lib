@@ -48,7 +48,7 @@ namespace external_drive_lib.bulk
                 try {
                     copy_complete_callback?.Invoke(f,idx,count);
                 } catch(Exception e) {
-                    throw new exception("could not find source file to copy " + f, e);
+                    throw new external_drive_libexception("could not find source file to copy " + f, e);
                 }
                 ++idx;
             }
@@ -149,16 +149,26 @@ namespace external_drive_lib.bulk
             List<copy_file_info> wait_complete = new List<copy_file_info>();
             int count = files_by_folder.Sum(f => f.Value.Count);
             int idx = 0;
+            Exception possibly_thrown = null;
             var t = Task.Run(() => {
-                if ( synchronous)
-                    wait_for_copy_complete(locker, wait_complete, count, ref idx, dest_folder_name, copy_complete_callback);
-                else if (copy_complete_callback != null)
-                    // here, we're async, but with callback
-                    Task.Run(() => wait_for_copy_complete(locker, wait_complete, count, ref idx, dest_folder_name, copy_complete_callback));                
+                try {
+                    if (synchronous)
+                        wait_for_copy_complete(locker, wait_complete, count, ref idx, dest_folder_name, copy_complete_callback);
+                    else if (copy_complete_callback != null)
+                        // here, we're async, but with callback
+                        Task.Run(() => wait_for_copy_complete(locker, wait_complete, count, ref idx, dest_folder_name, copy_complete_callback));
+                } catch (Exception e) {
+                    possibly_thrown = e;
+                }
             });
 
             bulk_copy_impl_sync(locker, files_by_folder, dest_folder_name, wait_complete);
-            t.Wait();
+            // note: we can get an exception before the above function completes (thus, no point in waiting for the task to complete)
+            if (possibly_thrown == null)
+                t.Wait();
+
+            if ( possibly_thrown != null)
+                throw possibly_thrown;
         }
 
         private static void wait_for_copy_complete(object locker, List<copy_file_info> src_files, int count, ref int idx, string dest_folder_name, Action<string,int,int> copy_complete_callback) {

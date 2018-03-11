@@ -160,14 +160,14 @@ namespace external_drive_lib.windows
         public IFile parse_file(string path) {
             var f = try_parse_file(path);
             if ( f == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             return f;
         }
 
         public IFolder parse_folder(string path) {
             var f = try_parse_folder(path);
             if ( f == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             return f;
         }
 

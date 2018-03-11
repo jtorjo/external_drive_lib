@@ -73,13 +73,13 @@ namespace external_drive_lib.windows
             // the copy process can take a while to start...
             last_size = wait_for_win_file_size(file_name, size, max_retry_first_time);
             if ( last_size <= 0)
-                throw new exception("File may have not been copied - " + file_name + " got 0, expected " + size);
+                throw new external_drive_libexception("File may have not been copied - " + file_name + " got 0, expected " + size);
 
             // the idea is - if after waiting a while, something got copied (size has changed), we keep waiting
             while (last_size < size) {
                 var cur_size = wait_for_win_file_size(file_name, size, max_retry);
                 if ( cur_size == last_size)
-                    throw new exception("File may have not been copied - " + file_name + " got " + cur_size + ", expected " + size);
+                    throw new external_drive_libexception("File may have not been copied - " + file_name + " got " + cur_size + ", expected " + size);
                 last_size = cur_size;
             }
         }
@@ -102,11 +102,11 @@ namespace external_drive_lib.windows
             // the copy process can take a while to start...
             last_size = wait_for_android_file_size(full_file_name, size, max_retry_first_time);
             if ( last_size < 0)
-                throw new exception("File may have not been copied - " + full_file_name + " got -1, expected " + size);
+                throw new external_drive_libexception("File may have not been copied - " + full_file_name + " got -1, expected " + size);
             while (last_size < size) {
                 var cur_size = wait_for_android_file_size(full_file_name, size, max_retry);
                 if ( cur_size == last_size)
-                    throw new exception("File may have not been copied - " + full_file_name + " got " + cur_size + ", expected " + size);
+                    throw new external_drive_libexception("File may have not been copied - " + full_file_name + " got " + cur_size + ", expected " + size);
                 last_size = cur_size;
             }
         }
@@ -173,7 +173,7 @@ namespace external_drive_lib.windows
             }
             // here, we're not really sure if the move worked - for retry_find_folder_move_complete, the recursive size hasn't changed,
             // and we old folder still exists
-            throw new exception("could not delete " + old_full_path);
+            throw new external_drive_libexception("could not delete " + old_full_path);
         }
 
 

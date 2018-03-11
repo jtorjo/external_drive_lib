@@ -21,7 +21,7 @@ namespace external_drive_lib.monitor
 
                 added_device?.Invoke(properties);
             } catch (Exception ex) {
-                throw new exception( "invalid device inserted", ex);
+                throw new external_drive_libexception( "invalid device inserted", ex);
             }
         }
 
@@ -36,7 +36,7 @@ namespace external_drive_lib.monitor
 
                 deleted_device?.Invoke(properties);
             } catch (Exception ex) {
-                throw new exception("invalid device removed", ex);
+                throw new external_drive_libexception("invalid device removed", ex);
             }
         }
 

@@ -75,7 +75,7 @@ namespace external_drive_lib.portable
             if ( dest != null)
                 dest.copy_file(this, false);
             else 
-                throw new exception("destination path does not exist: " + dest_path);
+                throw new external_drive_libexception("destination path does not exist: " + dest_path);
         }
 
         
@@ -88,7 +88,7 @@ namespace external_drive_lib.portable
             if ( dest != null)
                 dest.copy_file(this, true);
             else 
-                throw new exception("destination path does not exist: " + dest_path);
+                throw new external_drive_libexception("destination path does not exist: " + dest_path);
         }
 
         public void delete_sync() {

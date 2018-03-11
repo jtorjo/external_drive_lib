@@ -171,7 +171,7 @@ namespace external_drive_lib.portable
                     if (sub_items.Count == 1 && sub_items.Item(0).IsFolder) 
                         cur_folder = sub_items.Item(0).GetFolder as Folder;
                     else 
-                        throw new exception("Root drive doesn't have a single root folder (*)");
+                        throw new external_drive_libexception("Root drive doesn't have a single root folder (*)");
                 } else {
                     var sub_folder = cur_folder.ParseName(sub);
                     if (sub_folder == null)
@@ -187,14 +187,14 @@ namespace external_drive_lib.portable
         public IFile parse_file(string path) {
             var f = try_parse_file(path);
             if ( f == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             return f;
         }
 
         public IFolder parse_folder(string path) {
             var f = try_parse_folder(path);
             if (f == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             return f;
         }
 
@@ -275,10 +275,10 @@ namespace external_drive_lib.portable
                     sub = folder_object.ParseName(sub_name);
                 }
                 if ( sub == null)
-                    throw new exception("could not create part of path " + path);
+                    throw new external_drive_libexception("could not create part of path " + path);
 
                 if ( !sub.IsFolder)
-                    throw new exception("part of path is a file: " + path);
+                    throw new external_drive_libexception("part of path is a file: " + path);
                 cur = sub;
             }
 

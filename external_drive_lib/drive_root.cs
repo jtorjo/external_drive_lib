@@ -179,12 +179,12 @@ namespace external_drive_lib
             try {
                 drives_now.AddRange(get_win_drives());
             } catch (Exception e) {
-                throw new exception( "error getting win drives ", e);
+                throw new external_drive_libexception( "error getting win drives ", e);
             }
             try {
                 drives_now.AddRange(get_portable_drives());
             } catch (Exception e) {
-                throw new exception("error getting android drives ", e);
+                throw new external_drive_libexception("error getting android drives ", e);
             }
             var external = drives_now.Where(d => d.type != drive_type.internal_hdd).ToList();
             lock (this) {
@@ -259,7 +259,7 @@ namespace external_drive_lib
             // case insensitive
             var d = try_get_drive(drive_prefix);
             if ( d == null)
-                throw new exception("invalid drive " + drive_prefix);
+                throw new external_drive_libexception("invalid drive " + drive_prefix);
             return d;
         }
 
@@ -306,7 +306,7 @@ namespace external_drive_lib
             string drive_str, folder_or_file;
             split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
             if ( drive_str == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             var drive = try_get_drive(drive_str);
             if (drive == null)
                 return null;
@@ -318,7 +318,7 @@ namespace external_drive_lib
             string drive_str, folder_or_file;
             split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
             if ( drive_str == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             var drive = get_drive(drive_str);
             return drive.parse_folder(folder_or_file);
         }
@@ -328,7 +328,7 @@ namespace external_drive_lib
             string drive_str, folder_or_file;
             split_into_drive_and_folder_path(path, out drive_str, out folder_or_file);
             if ( drive_str == null)
-                throw new exception("invalid path " + path);
+                throw new external_drive_libexception("invalid path " + path);
             var drive = get_drive(drive_str);
             return drive.create_folder(folder_or_file);
         }
