@@ -261,10 +261,11 @@ namespace console_test
         }
 
         static void Main(string[] args) {
-            example_delete_first_camera_file();
+            //example_delete_first_camera_file();
+            //usb_util.monitor_usb_devices("Win32_USBHub");
+            //usb_util.monitor_usb_devices("Win32_USBControllerDevice");
             //usb_util.monitor_usb_devices("Win32_LogicalDisk");
-//            foreach ( var details in usb_util.get_all_paths_and_details())
-  //              Console.WriteLine(details);
+
             example_show_all_drives();
             example_show_all_portable_drives();
             example_wait_for_first_connected_device();

@@ -21,10 +21,13 @@ namespace external_drive_lib.windows
 
         private drive_type drive_type_ = drive_type.internal_hdd;
 
+        private string friendly_name_ = "";
+
         public win_drive(DriveInfo di) {
             try {
                 root_ = di.RootDirectory.FullName;
                 drive_type_ = find_drive_type(di);
+                friendly_name_ = find_friendly_name(di);
             } catch (Exception e) {
                 // "bad drive " + di + " : " + e;
                 valid_ = false;
@@ -63,7 +66,38 @@ namespace external_drive_lib.windows
             }
         } 
         public string friendly_name {
-            get { return root_; }
+            get { return friendly_name_; }
+        }
+
+        private string find_friendly_name(DriveInfo di) {
+            var not_allowed = "~#%&*{}\\:<>?/+|\"";
+            switch (drive_type_) {
+                case drive_type.sd_card:
+                case drive_type.usb_stick:
+                    var volume = di.VolumeLabel;
+                    if (!string.IsNullOrEmpty(volume))
+                        volume = new string( volume.Trim().Where(ch => !not_allowed.Contains(ch)).ToArray());
+                    if (!string.IsNullOrEmpty(volume))
+                        return volume;
+                    break;
+            }
+
+            switch (drive_type_) {
+                case drive_type.sd_card:
+                case drive_type.usb_stick:
+                    var possible_name = drive_frienly_name(di.Name);
+                    if (possible_name != null)
+                        return possible_name;
+                    break;
+            }
+
+            switch (drive_type_) {
+                case drive_type.sd_card:
+                    return "SD Card";
+                case drive_type.usb_stick:
+                    return "USB Stick";
+            }
+            return root_;            
         }
 
         private drive_type find_drive_type(DriveInfo di) {
@@ -94,11 +128,27 @@ namespace external_drive_lib.windows
             }
         }
 
+        private static string drive_frienly_name(string drive) {
+            try {
+                var found = portable_util.get_all_connected_device_drives().FirstOrDefault(d => d.Path.ToLower() == drive.ToLower());
+                if (found != null) {
+                    var friendly = found.Name;
+                    if (friendly.IndexOf("(") >= 0)
+                        friendly = friendly.Substring(0, friendly.IndexOf("(")).Trim();
+                    if ( friendly != "")
+                        return friendly;
+                }
+            } catch {
+            }
+            return null;
+        }
+
         private static bool is_usb_drive(string drive) {
             try {
                 var found = portable_util.get_all_connected_device_drives().FirstOrDefault(d => d.Path.ToLower() == drive.ToLower());
-                if (found != null)
-                    return found.Name.ToLower().Contains("usb");
+                if (found != null) {
+                    return found.Type.ToLower().Contains("usb");
+                }
             } catch {
             }
             return false;
