@@ -31,16 +31,16 @@ namespace external_drive_lib
         private monitor_usb_drives monitor_usb_drives_ = new monitor_usb_drives();
         private Dictionary<string,string> vidpid_to_unique_id_ = new Dictionary<string, string>();
 
+        private const string INVALID_UNIQUE_ID = "_invalid_";
+
         private drive_root() {
             var existing_devices = find_devices.find_objects("Win32_USBHub");
             foreach (var device in existing_devices) {
                 if (device.ContainsKey("PNPDeviceID")) {
                     var device_id = device["PNPDeviceID"];
                     string vid_pid = "", unique_id = "";
-                    if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
-                        lock(this)
-                            vidpid_to_unique_id_.Add(vid_pid, unique_id);
-                    }
+                    if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
+                        add_vidpid(vid_pid, unique_id);
                 }
             }
             var existing_controller_devices = find_devices.find_objects("Win32_USBControllerDevice");
@@ -48,11 +48,8 @@ namespace external_drive_lib
                 if (device.ContainsKey("Dependent")) {
                     var device_id = device["Dependent"];
                     string vid_pid = "", unique_id = "";
-                    if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) {
-                        lock(this)
-                            if ( !vidpid_to_unique_id_.ContainsKey(vid_pid))
-                                vidpid_to_unique_id_.Add(vid_pid, unique_id);
-                    }
+                    if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
+                        add_vidpid(vid_pid, unique_id);
                 }
             }
 
@@ -69,20 +66,29 @@ namespace external_drive_lib
             new Thread(win32_util.check_for_dialogs_thread) {IsBackground = true}.Start();
         }
 
+        private void add_vidpid(string vid_pid, string unique_id) {
+            lock (this)
+                if (!vidpid_to_unique_id_.ContainsKey(vid_pid))
+                    vidpid_to_unique_id_.Add(vid_pid, unique_id);
+            // if the same unique ID, we're fine
+                else if ( vidpid_to_unique_id_[vid_pid] != unique_id)
+                    // two vid-pids with the same ID - we ignore them altogether
+                    vidpid_to_unique_id_[vid_pid] = INVALID_UNIQUE_ID;            
+        }
+
         // returns all drives, even the internal HDDs - you might need this if you want to copy a file onto an external drive
         public IReadOnlyList<IDrive> drives {
-            get { lock(this) return drives_; }
+            get { lock (this) return drives_; }
         }
 
 
 
         private void on_new_device(string vid_pid, string unique_id) {
-            lock (this) {
-                if (vidpid_to_unique_id_.ContainsKey(vid_pid))
-                    vidpid_to_unique_id_[vid_pid] = unique_id;
-                else
-                    vidpid_to_unique_id_.Add(vid_pid, unique_id);
-            }
+            add_vidpid(vid_pid, unique_id);
+            lock(this)
+                if (vidpid_to_unique_id_[vid_pid] == INVALID_UNIQUE_ID)
+                    return; // duplicate vidpids
+
             refresh_portable_unique_ids();
             var already_a_drive = false;
             lock (this) {
@@ -194,9 +200,9 @@ namespace external_drive_lib
         }
 
         private void refresh_portable_unique_ids() {
-            lock(this)
+            lock (this)
                 foreach ( portable_drive ad in drives_.OfType<portable_drive>())
-                    if ( vidpid_to_unique_id_.ContainsKey(ad.vid_pid))
+                    if ( vidpid_to_unique_id_.ContainsKey(ad.vid_pid) && vidpid_to_unique_id_[ad.vid_pid] != INVALID_UNIQUE_ID)
                         ad.unique_id = vidpid_to_unique_id_[ad.vid_pid];
         }
 

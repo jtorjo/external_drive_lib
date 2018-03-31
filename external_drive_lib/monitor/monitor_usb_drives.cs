@@ -24,7 +24,7 @@ namespace external_drive_lib.monitor
 
         // returns the drive's unique id or null if drive not found
         public string unique_id(char drive) {
-            lock(this)
+            lock (this)
                 if (drive_to_unique_id_.ContainsKey(drive))
                     return drive_to_unique_id_[drive];
             return null;
@@ -40,7 +40,7 @@ namespace external_drive_lib.monitor
                 var unique_id = properties["VolumeSerialNumber"];
                 if (include_size_in_unique_id)
                     unique_id += "-" + properties["Size"];
-                lock(this)
+                lock (this)
                     if (drive_to_unique_id_.ContainsKey(drive))
                         drive_to_unique_id_[drive] = unique_id;
                     else 

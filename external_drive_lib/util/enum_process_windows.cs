@@ -41,7 +41,7 @@ namespace external_drive_lib.util
                 process_ = Process.GetCurrentProcess();
                 foreach (ProcessThread t in process_.Threads)
                     thread_ids.Add(t.Id);
-                lock(this)
+                lock (this)
                     thread_ids_ = thread_ids;
             } catch {
             }

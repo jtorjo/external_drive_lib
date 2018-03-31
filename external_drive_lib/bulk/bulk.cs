@@ -104,7 +104,7 @@ namespace external_drive_lib.bulk
                 // note: we want to compute these beforehand (before the copy takes place) - if a file is being copied, access to it can be locked,
                 //       so even asking "f.name" will wait until the copy is 100% complete - which is NOT what we want
                 var wait_complete_now = f.Value.Select(src => new copy_file_info {name = src.name, size = src.size}).ToList();
-                lock(locker)
+                lock (locker)
                     wait_complete.AddRange(wait_complete_now);
                 if (src_items.Count == f.Value.Count) {
                     dest_parent_shell_folder.CopyHere(src_items, copy_options);
