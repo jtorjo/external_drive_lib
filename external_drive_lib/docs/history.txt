@@ -1,4 +1,7 @@
 ﻿
+1.2.9
+sd cards work correctly, even when removed midway while copying
+
 
 1.2.7
 external drvies (usb sticks/sd cards/external hdds) -> unique id shown correctly

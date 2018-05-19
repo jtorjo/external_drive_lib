@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Management;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using external_drive_lib.exceptions;
 using external_drive_lib.interfaces;
@@ -23,11 +24,14 @@ namespace external_drive_lib.windows
 
         private string friendly_name_ = "";
 
+        private string cached_unique_id_ = null;
+
         public win_drive(DriveInfo di) {
             try {
                 root_ = di.RootDirectory.FullName;
                 drive_type_ = find_drive_type(di);
                 friendly_name_ = find_friendly_name(di);
+                check_if_still_connected();
             } catch (Exception e) {
                 // "bad drive " + di + " : " + e;
                 valid_ = false;
@@ -39,11 +43,11 @@ namespace external_drive_lib.windows
         }
 
         public bool is_connected() {
-            return true;
+            return check_if_still_connected();
         }
 
         public bool is_available() {
-            return true;
+            return check_if_still_connected();
         }
 
         public drive_type type {
@@ -56,17 +60,44 @@ namespace external_drive_lib.windows
 
         public string unique_id {
             get {
-                if (drive_type_ != drive_type.cd_rom && drive_type_ != drive_type.internal_hdd) {
-                    var id = drive_root.inst.try_get_unique_id_for_drive(root_[0]);
-                    if (id != null)
+                string id = null;
+                if (cached_unique_id_ == null) {
+                    id = find_unique_id();
+                    if (id != null) {
+                        lock (this)
+                            cached_unique_id_ = id;
                         return id;
-                }
+                    }
+                } else
+                    return cached_unique_id_;
 
                 return root_;
             }
         } 
         public string friendly_name {
             get { return friendly_name_; }
+        }
+
+        private string find_unique_id() {
+            if (drive_type_ != drive_type.cd_rom && drive_type_ != drive_type.internal_hdd) {
+                var id = drive_root.inst.try_get_unique_id_for_drive(root_[0]);
+                // could be null
+                return id;
+            }
+
+            return root_;
+        }
+
+        private bool check_if_still_connected() {
+            if (drive_type_ == drive_type.cd_rom || drive_type_ == drive_type.internal_hdd)
+                return true;
+
+            // as soon as we know the driv'e unique id, find it
+            var id = drive_root.inst.try_get_unique_id_for_drive(root_[0]);
+            if ( cached_unique_id_ == null && id != null)
+                lock (this)
+                    cached_unique_id_ = id;
+            return id == cached_unique_id_;
         }
 
         private string find_friendly_name(DriveInfo di) {
@@ -156,48 +187,52 @@ namespace external_drive_lib.windows
 
         //https://stackoverflow.com/questions/9891854/how-to-determine-if-drive-is-external-drive
         private static bool is_external_disk(string drive_letter) {
-            bool retVal = false;
             drive_letter = drive_letter.TrimEnd('\\');
 
-            // browse all USB WMI physical disks
-            foreach (ManagementObject drive in new ManagementObjectSearcher("select DeviceID, MediaType,InterfaceType from Win32_DiskDrive").Get()) {
-                // associate physical disks with partitions
-                ManagementObjectCollection partitionCollection = new ManagementObjectSearcher(
-                    $"associators of {{Win32_DiskDrive.DeviceID='{drive["DeviceID"]}'}} " +
-                    "where AssocClass = Win32_DiskDriveToDiskPartition").Get();
+            // just in case we get exceptions (can happen on drive taken out)
+            for (int retry = 0; retry < 3; ++retry)
+                try {
+                    // browse all USB WMI physical disks
+                    foreach (ManagementObject drive in new ManagementObjectSearcher("select DeviceID, MediaType,InterfaceType from Win32_DiskDrive").Get()) {
+                        // associate physical disks with partitions
+                        ManagementObjectCollection partitionCollection =
+                            new ManagementObjectSearcher($"associators of {{Win32_DiskDrive.DeviceID='{drive["DeviceID"]}'}} " +
+                                                         "where AssocClass = Win32_DiskDriveToDiskPartition").Get();
 
-                foreach (ManagementObject partition in partitionCollection) {
-                    if (partition != null) {
-                        // associate partitions with logical disks (drive letter volumes)
-                        ManagementObjectCollection logicalCollection =
-                            new
-                                ManagementObjectSearcher(String.Format("associators of {{Win32_DiskPartition.DeviceID='{0}'}} " 
-                                    + "where AssocClass= Win32_LogicalDiskToPartition",
-                                                                       partition["DeviceID"])).Get();
+                        foreach (ManagementObject partition in partitionCollection) {
+                            if (partition != null) {
+                                // associate partitions with logical disks (drive letter volumes)
+                                ManagementObjectCollection logicalCollection =
+                                    new
+                                        ManagementObjectSearcher(String
+                                                                     .Format("associators of {{Win32_DiskPartition.DeviceID='{0}'}} " + "where AssocClass= Win32_LogicalDiskToPartition",
+                                                                             partition["DeviceID"])).Get();
 
-                        foreach (ManagementObject logical in logicalCollection) {
-                            if (logical != null) {
-                                // finally find the logical disk entry
-                                ManagementObjectCollection.ManagementObjectEnumerator volumeEnumerator =
-                                    new ManagementObjectSearcher("select DeviceID from Win32_LogicalDisk " + $"where Name='{logical["Name"]}'")
-                                        .Get().GetEnumerator();
-                                volumeEnumerator.MoveNext();
-                                ManagementObject volume = (ManagementObject) volumeEnumerator.Current;
+                                foreach (ManagementObject logical in logicalCollection) {
+                                    if (logical != null) {
+                                        // finally find the logical disk entry
+                                        ManagementObjectCollection.ManagementObjectEnumerator volumeEnumerator =
+                                            new ManagementObjectSearcher("select DeviceID from Win32_LogicalDisk " + $"where Name='{logical["Name"]}'")
+                                                .Get().GetEnumerator();
+                                        volumeEnumerator.MoveNext();
+                                        ManagementObject volume = (ManagementObject) volumeEnumerator.Current;
 
-                                if (drive_letter.ToLowerInvariant().Equals(volume["DeviceID"].ToString().ToLowerInvariant()) &&
-                                    (drive["MediaType"].ToString().ToLowerInvariant().Contains("external") ||
-                                     drive["InterfaceType"].ToString().ToLowerInvariant().Contains("usb"))) {
-                                    retVal = true;
-                                    break;
+                                        if (drive_letter.ToLowerInvariant().Equals(volume["DeviceID"].ToString().ToLowerInvariant()) &&
+                                            (drive["MediaType"].ToString().ToLowerInvariant().Contains("external") ||
+                                             drive["InterfaceType"].ToString().ToLowerInvariant().Contains("usb"))) {
+                                            return true;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                } catch {
+                    Thread.Sleep(100);
                 }
-            }
 
-            return retVal;
-        }
+        return false;
+    }
 
 
         public IEnumerable<IFolder> folders {

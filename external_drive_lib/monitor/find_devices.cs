@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace external_drive_lib.monitor
@@ -49,18 +50,23 @@ namespace external_drive_lib.monitor
             }            
         }
 
-        public static List< Dictionary<string,string>> find_objects(string type) {
-            List<Dictionary<string, string>> result = new List<Dictionary<string, string>>();
-            var search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM " + type);
-            foreach (ManagementObject o in search.Get()) {
-                Dictionary<string,string> properties = new Dictionary<string, string>();
-                foreach (var p in o.Properties)
-                    if ( p.Value != null)
-                        properties.Add(p.Name, p.Value.ToString());                
-                result.Add(properties);
-            }
+        public static List<Dictionary<string, string>> find_objects(string type) {
+            for (int retry = 0; retry < 3; ++retry)
+                try {
+                    List<Dictionary<string, string>> result = new List<Dictionary<string, string>>();
+                    var search = new ManagementObjectSearcher("root\\CIMV2", "SELECT * FROM " + type);
+                    foreach (ManagementObject o in search.Get()) {
+                        Dictionary<string, string> properties = new Dictionary<string, string>();
+                        foreach (var p in o.Properties)
+                            if (p.Value != null)
+                                properties.Add(p.Name, p.Value.ToString());
+                        result.Add(properties);
+                    }
+                } catch {
+                    Thread.Sleep(100);
+                }
 
-            return result;
+            return new List<Dictionary<string, string>>();
         }
 
     }
