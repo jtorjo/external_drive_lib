@@ -47,16 +47,20 @@ namespace external_drive_lib.monitor
         // examples: generic_monitor("Win32_USBHub"); generic_monitor("Win32_DiskDrive");
         public void monitor(string class_name)
         {
-            WqlEventQuery insertQuery = new WqlEventQuery("SELECT * FROM __InstanceCreationEvent WITHIN 2 WHERE TargetInstance ISA '" + class_name + "'");
+            try {
+                WqlEventQuery insertQuery = new WqlEventQuery("SELECT * FROM __InstanceCreationEvent WITHIN 2 WHERE TargetInstance ISA '" + class_name + "'");
 
-            ManagementEventWatcher insertWatcher = new ManagementEventWatcher(insertQuery);
-            insertWatcher.EventArrived += new EventArrivedEventHandler(device_inserted_event);
-            insertWatcher.Start();
+                ManagementEventWatcher insertWatcher = new ManagementEventWatcher(insertQuery);
+                insertWatcher.EventArrived += new EventArrivedEventHandler(device_inserted_event);
+                insertWatcher.Start();
 
-            WqlEventQuery removeQuery = new WqlEventQuery("SELECT * FROM __InstanceDeletionEvent WITHIN 2 WHERE TargetInstance ISA '" + class_name + "'");
-            ManagementEventWatcher removeWatcher = new ManagementEventWatcher(removeQuery);
-            removeWatcher.EventArrived += new EventArrivedEventHandler(device_removed_event);
-            removeWatcher.Start();
+                WqlEventQuery removeQuery = new WqlEventQuery("SELECT * FROM __InstanceDeletionEvent WITHIN 2 WHERE TargetInstance ISA '" + class_name + "'");
+                ManagementEventWatcher removeWatcher = new ManagementEventWatcher(removeQuery);
+                removeWatcher.EventArrived += new EventArrivedEventHandler(device_removed_event);
+                removeWatcher.Start();
+            } catch (Exception e) {
+                throw new external_drive_libexception("could not monitor for " + class_name, e);
+            }
         }
 
     }

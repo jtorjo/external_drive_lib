@@ -31,7 +31,6 @@ namespace external_drive_lib.windows
                 root_ = di.RootDirectory.FullName;
                 drive_type_ = find_drive_type(di);
                 friendly_name_ = find_friendly_name(di);
-                check_if_still_connected();
             } catch (Exception e) {
                 // "bad drive " + di + " : " + e;
                 valid_ = false;

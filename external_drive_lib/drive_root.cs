@@ -34,34 +34,52 @@ namespace external_drive_lib
         private const string INVALID_UNIQUE_ID = "_invalid_";
 
         private drive_root() {
-            var existing_devices = find_devices.find_objects("Win32_USBHub");
-            foreach (var device in existing_devices) {
-                if (device.ContainsKey("PNPDeviceID")) {
-                    var device_id = device["PNPDeviceID"];
-                    string vid_pid = "", unique_id = "";
-                    if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
-                        add_vidpid(vid_pid, unique_id);
+            // not really proud of swallowing exceptions here, but otherwise if we were not able to create the drive_root object,
+            // any other function would likely end up throwing
+            try {
+                var existing_devices = find_devices.find_objects("Win32_USBHub");
+                foreach (var device in existing_devices) {
+                    if (device.ContainsKey("PNPDeviceID")) {
+                        var device_id = device["PNPDeviceID"];
+                        string vid_pid = "", unique_id = "";
+                        if (usb_util.pnp_device_id_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id))
+                            add_vidpid(vid_pid, unique_id);
+                    }
                 }
-            }
-            var existing_controller_devices = find_devices.find_objects("Win32_USBControllerDevice");
-            foreach (var device in existing_controller_devices) {
-                if (device.ContainsKey("Dependent")) {
-                    var device_id = device["Dependent"];
-                    string vid_pid = "", unique_id = "";
-                    if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id)) 
-                        add_vidpid(vid_pid, unique_id);
-                }
+            } catch {
             }
 
-            refresh();
+            try {
+                var existing_controller_devices = find_devices.find_objects("Win32_USBControllerDevice");
+                foreach (var device in existing_controller_devices) {
+                    if (device.ContainsKey("Dependent")) {
+                        var device_id = device["Dependent"];
+                        string vid_pid = "", unique_id = "";
+                        if (usb_util.dependent_to_vidpid_and_unique_id(device_id, ref vid_pid, ref unique_id))
+                            add_vidpid(vid_pid, unique_id);
+                    }
+                }
+            } catch {
+            }
 
-            monitor_usbhub_devices_.added_device += device_added;
-            monitor_usbhub_devices_.deleted_device += device_removed;
-            monitor_usbhub_devices_.monitor("Win32_USBHub");
+            try {
+                refresh();
+            } catch {
+            }
 
-            monitor_controller_devices_.added_device += device_added_controller;
-            monitor_controller_devices_.deleted_device += device_removed_controller;
-            monitor_controller_devices_.monitor("Win32_USBControllerDevice");
+            try {
+                monitor_usbhub_devices_.added_device += device_added;
+                monitor_usbhub_devices_.deleted_device += device_removed;
+                monitor_usbhub_devices_.monitor("Win32_USBHub");
+            } catch {                
+            }
+
+            try {
+                monitor_controller_devices_.added_device += device_added_controller;
+                monitor_controller_devices_.deleted_device += device_removed_controller;
+                monitor_controller_devices_.monitor("Win32_USBControllerDevice");
+            } catch {                
+            }
 
             new Thread(win32_util.check_for_dialogs_thread) {IsBackground = true}.Start();
         }

@@ -1,4 +1,8 @@
 ﻿
+1.2.10
+make sure we don't hrow an exception while loading drive_root
+
+
 1.2.9
 sd cards work correctly, even when removed midway while copying
 
