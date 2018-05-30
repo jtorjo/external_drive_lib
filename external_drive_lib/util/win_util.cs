@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Management;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -209,6 +210,68 @@ namespace external_drive_lib.windows
                 Thread.Sleep(ms);
                 a();
             });
+        }
+
+
+        //https://stackoverflow.com/questions/9891854/how-to-determine-if-drive-is-external-drive
+        //
+        // 1.4.7+ note: this is insanely high-CPU intensive, thus we want to mimize the calls to this function
+        public static List<char> external_disk_drives() {
+
+            List<char> external_drives = new List<char>();
+
+            // just in case we get exceptions (can happen on drive taken out)
+            for (int retry = 0; retry < 3; ++retry)
+                try {
+                    // browse all USB WMI physical disks
+                    foreach (ManagementObject drive in new ManagementObjectSearcher("select DeviceID, MediaType,InterfaceType from Win32_DiskDrive").Get()) {
+                        // associate physical disks with partitions
+                        ManagementObjectCollection partitionCollection =
+                            new ManagementObjectSearcher($"associators of {{Win32_DiskDrive.DeviceID='{drive["DeviceID"]}'}} " +
+                                                         "where AssocClass = Win32_DiskDriveToDiskPartition").Get();
+
+                        foreach (ManagementObject partition in partitionCollection) {
+                            if (partition != null) {
+                                // associate partitions with logical disks (drive letter volumes)
+                                ManagementObjectCollection logicalCollection =
+                                    new
+                                        ManagementObjectSearcher(String
+                                                                     .Format("associators of {{Win32_DiskPartition.DeviceID='{0}'}} " + "where AssocClass= Win32_LogicalDiskToPartition",
+                                                                             partition["DeviceID"])).Get();
+
+                                foreach (ManagementObject logical in logicalCollection) {
+                                    if (logical != null) {
+                                        // finally find the logical disk entry
+                                        ManagementObjectCollection.ManagementObjectEnumerator volumeEnumerator =
+                                            new ManagementObjectSearcher("select DeviceID from Win32_LogicalDisk " + $"where Name='{logical["Name"]}'")
+                                                .Get().GetEnumerator();
+                                        volumeEnumerator.MoveNext();
+                                        ManagementObject volume = (ManagementObject) volumeEnumerator.Current;
+
+                                        var volume_id = volume["DeviceID"].ToString().ToLowerInvariant();
+                                        var is_drive = volume_id.Length == 2 && volume_id[1] == ':' && Char.IsLetter(volume_id[0]);
+                                        if (is_drive) {
+                                            var media = drive["MediaType"];
+                                            var interface_type = drive["InterfaceType"];
+                                            var is_external = false;
+                                            if (media?.ToString().ToLowerInvariant().Contains("external") ?? false)
+                                                is_external = true;
+                                            if (interface_type?.ToString().ToLowerInvariant().Contains("usb") ?? false)
+                                                is_external = true;
+                                            if ( is_external)
+                                                external_drives.Add(volume_id[0]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } catch {
+                    Thread.Sleep(100);
+                    external_drives.Clear();
+                }
+
+            return external_drives;
         }
 
     }

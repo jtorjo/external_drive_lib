@@ -33,6 +33,8 @@ namespace external_drive_lib
 
         private const string INVALID_UNIQUE_ID = "_invalid_";
 
+        private List<char> external_drives_ = new List<char>();
+
         private drive_root() {
             // not really proud of swallowing exceptions here, but otherwise if we were not able to create the drive_root object,
             // any other function would likely end up throwing
@@ -202,6 +204,24 @@ namespace external_drive_lib
             List<IDrive> drives_now = new List<IDrive>();
             try {
                 drives_now.AddRange(get_win_drives());
+                bool different;
+                lock (this) {
+                    var old_win = drives_.Where(d => !d.type.is_portable()).Select(d => d.unique_id).ToList();
+                    var new_win = drives_now.Select(d => d.unique_id).ToList();
+                    different = !old_win.SequenceEqual(new_win);
+                }
+                if (different) {
+                    // we have a different number of windows drives ->recompute the external drives (this is CPU intensive, and we want to avoid calling it too many times)
+                    var ed = win_util.external_disk_drives();
+                    lock (this)
+                        external_drives_ = ed;
+                }
+
+                if (different) {
+                    drives_now.Clear();
+                    drives_now.AddRange(get_win_drives());
+                }
+
             } catch (Exception e) {
                 throw new external_drive_libexception( "error getting win drives ", e);
             }
@@ -210,7 +230,6 @@ namespace external_drive_lib
             } catch (Exception e) {
                 throw new external_drive_libexception("error getting android drives ", e);
             }
-            var external = drives_now.Where(d => d.type != drive_type.internal_hdd).ToList();
             lock (this) {
                 drives_ = drives_now;
             }
@@ -385,7 +404,10 @@ namespace external_drive_lib
         // for now, I return all drives - don't care about which is External, Removable, whatever
 
         private List<IDrive> get_win_drives() {
-            return DriveInfo.GetDrives().Select(d => new win_drive(d) as IDrive).ToList();
+            List<char> external_drives;
+            lock (this)
+                external_drives = external_drives_;
+            return DriveInfo.GetDrives().Select(d => new win_drive(d,external_drives) as IDrive).ToList();
         }
         // END OF Windows
         //////////////////////////////////////////////////////////////////////////////////////////////////////////

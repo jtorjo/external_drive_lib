@@ -26,10 +26,10 @@ namespace external_drive_lib.windows
 
         private string cached_unique_id_ = null;
 
-        public win_drive(DriveInfo di) {
+        public win_drive(DriveInfo di, IReadOnlyList<char> external_drives) {
             try {
                 root_ = di.RootDirectory.FullName;
-                drive_type_ = find_drive_type(di);
+                drive_type_ = find_drive_type(di, external_drives);
                 friendly_name_ = find_friendly_name(di);
             } catch (Exception e) {
                 // "bad drive " + di + " : " + e;
@@ -130,7 +130,7 @@ namespace external_drive_lib.windows
             return root_;            
         }
 
-        private drive_type find_drive_type(DriveInfo di) {
+        private drive_type find_drive_type(DriveInfo di, IReadOnlyList<char> external_drives) {
             switch (di.DriveType) {
                 case DriveType.Unknown:
                 case DriveType.NoRootDirectory:
@@ -146,7 +146,8 @@ namespace external_drive_lib.windows
                     return is_usb ? drive_type.usb_stick : drive_type.sd_card;
 
                 case DriveType.Fixed:
-                    var is_external = is_external_disk(di.Name);
+                    var drive_letter = di.Name.Length > 0 ? di.Name.ToLower()[0] : '\0';
+                    var is_external = external_drives.Contains(drive_letter);
                     return is_external ? drive_type.external_hdd : drive_type.internal_hdd;
 
                 case DriveType.Ram:
@@ -184,54 +185,6 @@ namespace external_drive_lib.windows
             return false;
         }
 
-        //https://stackoverflow.com/questions/9891854/how-to-determine-if-drive-is-external-drive
-        private static bool is_external_disk(string drive_letter) {
-            drive_letter = drive_letter.TrimEnd('\\');
-
-            // just in case we get exceptions (can happen on drive taken out)
-            for (int retry = 0; retry < 3; ++retry)
-                try {
-                    // browse all USB WMI physical disks
-                    foreach (ManagementObject drive in new ManagementObjectSearcher("select DeviceID, MediaType,InterfaceType from Win32_DiskDrive").Get()) {
-                        // associate physical disks with partitions
-                        ManagementObjectCollection partitionCollection =
-                            new ManagementObjectSearcher($"associators of {{Win32_DiskDrive.DeviceID='{drive["DeviceID"]}'}} " +
-                                                         "where AssocClass = Win32_DiskDriveToDiskPartition").Get();
-
-                        foreach (ManagementObject partition in partitionCollection) {
-                            if (partition != null) {
-                                // associate partitions with logical disks (drive letter volumes)
-                                ManagementObjectCollection logicalCollection =
-                                    new
-                                        ManagementObjectSearcher(String
-                                                                     .Format("associators of {{Win32_DiskPartition.DeviceID='{0}'}} " + "where AssocClass= Win32_LogicalDiskToPartition",
-                                                                             partition["DeviceID"])).Get();
-
-                                foreach (ManagementObject logical in logicalCollection) {
-                                    if (logical != null) {
-                                        // finally find the logical disk entry
-                                        ManagementObjectCollection.ManagementObjectEnumerator volumeEnumerator =
-                                            new ManagementObjectSearcher("select DeviceID from Win32_LogicalDisk " + $"where Name='{logical["Name"]}'")
-                                                .Get().GetEnumerator();
-                                        volumeEnumerator.MoveNext();
-                                        ManagementObject volume = (ManagementObject) volumeEnumerator.Current;
-
-                                        if (drive_letter.ToLowerInvariant().Equals(volume["DeviceID"].ToString().ToLowerInvariant()) &&
-                                            (drive["MediaType"].ToString().ToLowerInvariant().Contains("external") ||
-                                             drive["InterfaceType"].ToString().ToLowerInvariant().Contains("usb"))) {
-                                            return true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch {
-                    Thread.Sleep(100);
-                }
-
-        return false;
-    }
 
 
         public IEnumerable<IFolder> folders {
