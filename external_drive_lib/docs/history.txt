@@ -1,4 +1,8 @@
 ﻿
+1.2.11
+- improved speed refreshing the drive list
+
+
 1.2.10
 make sure we don't hrow an exception while loading drive_root
 
