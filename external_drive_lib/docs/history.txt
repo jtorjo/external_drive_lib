@@ -1,4 +1,8 @@
 ﻿
+1.2.12
+- make sure we don't throw if an sd-card is connected at startup
+
+
 1.2.11
 - improved speed refreshing the drive list
 

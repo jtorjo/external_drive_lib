@@ -28,7 +28,7 @@ namespace external_drive_lib
         private monitor_devices monitor_usbhub_devices_ = new monitor_devices ();
         private monitor_devices monitor_controller_devices_ = new monitor_devices ();
         
-        private monitor_usb_drives monitor_usb_drives_ = new monitor_usb_drives();
+        private static monitor_usb_drives monitor_usb_drives_ = new monitor_usb_drives();
         private Dictionary<string,string> vidpid_to_unique_id_ = new Dictionary<string, string>();
 
         private const string INVALID_UNIQUE_ID = "_invalid_";
@@ -128,7 +128,11 @@ namespace external_drive_lib
                 if (ad != null)
                     ad.connected_via_usb = false;
             }
-            refresh();
+            try {
+                refresh();
+            } catch {
+                // make sure we don't throw here - could end the app
+            }
         }
 
         private void device_added_controller(Dictionary<string, string> properties) {
@@ -165,8 +169,11 @@ namespace external_drive_lib
             const int MAX_RETRIES = 10;
             var drives_now = get_portable_drives();
             var found = drives_now.FirstOrDefault(d => (d as portable_drive).vid_pid == vidpid);
-            if (found != null) 
-                refresh();
+            if (found != null)
+                try {
+                    refresh();
+                } catch {
+                }
             else if (idx < MAX_RETRIES)
                 win_util.postpone(() => monitor_for_drive(vidpid, idx + 1), 100);
             else {
@@ -306,8 +313,8 @@ namespace external_drive_lib
             return d;
         }
 
-        internal string try_get_unique_id_for_drive(char letter) {
-            return monitor_usb_drives_.unique_id(letter);
+        internal static string try_get_unique_id_for_drive(char letter) {
+            return monitor_usb_drives_?.unique_id(letter) ;
         }
 
         private void split_into_drive_and_folder_path(string path, out string drive, out string folder_or_file) {

@@ -78,10 +78,14 @@ namespace external_drive_lib.windows
         }
 
         private string find_unique_id() {
-            if (drive_type_ != drive_type.cd_rom && drive_type_ != drive_type.internal_hdd) {
-                var id = drive_root.inst.try_get_unique_id_for_drive(root_[0]);
-                // could be null
-                return id;
+            try {
+                if (drive_type_ != drive_type.cd_rom && drive_type_ != drive_type.internal_hdd) {
+                    var id = drive_root.try_get_unique_id_for_drive(root_[0]);
+                    // could be null
+                    return id;
+                }
+            } catch {
+                // could happen during construction of drive_root
             }
 
             return root_;
@@ -92,7 +96,7 @@ namespace external_drive_lib.windows
                 return true;
 
             // as soon as we know the driv'e unique id, find it
-            var id = drive_root.inst.try_get_unique_id_for_drive(root_[0]);
+            var id = drive_root.try_get_unique_id_for_drive(root_[0]);
             if ( cached_unique_id_ == null && id != null)
                 lock (this)
                     cached_unique_id_ = id;
