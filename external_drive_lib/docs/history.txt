@@ -1,4 +1,9 @@
 ﻿
+
+1.2.13
+- make sure no thread exception terminates the app using us
+
+
 1.2.12
 - make sure we don't throw if an sd-card is connected at startup
 

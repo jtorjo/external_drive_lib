@@ -39,35 +39,40 @@ namespace external_drive_lib.util
 
         public static void check_for_dialogs_thread() {
             enum_process_windows find_windows = new enum_process_windows();
-            HashSet<IntPtr> processed_windows_ = new HashSet<IntPtr>();
+            HashSet<IntPtr> processed_windows = new HashSet<IntPtr>();
 
             while (true) {
-                var check_sleep_ms = drive_root.inst.auto_close_win_dialogs ? 50 : 500;
+                var check_sleep_ms = drive_root.inst?.auto_close_win_dialogs ?? false ? 50 : 500;
                 Thread.Sleep(check_sleep_ms);
-                if (drive_root.inst.auto_close_win_dialogs) {
-                    var windows = find_windows.get_all_top_windows();
-                    foreach ( var w in windows)
-                        if (!processed_windows_.Contains(w)) {
-                            processed_windows_.Add(w);
-                            var class_name = window_class_name(w);
-                            if (class_name == "#32770") {
-                                var children = find_windows.get_child_windows(w);
-                                var class_names = children.Select(c => new Tuple<IntPtr, string>(c,window_class_name(c))).ToList();
-                                var is_windows_progress_dialog = class_names.Any(c => c.Item2 == "DirectUIHWND") && class_names.Any(c => c.Item2 == "msctls_progress32");
-                                if (is_windows_progress_dialog) {
-                                    // found a shell copy/move/delete window
+                try {
+                    if (drive_root.inst.auto_close_win_dialogs) {
+                        var windows = find_windows.get_all_top_windows();
+                        foreach (var w in windows)
+                            if (!processed_windows.Contains(w)) {
+                                processed_windows.Add(w);
+                                var class_name = window_class_name(w);
+                                if (class_name == "#32770") {
+                                    var children = find_windows.get_child_windows(w);
+                                    var class_names = children.Select(c => new Tuple<IntPtr, string>(c, window_class_name(c))).ToList();
+                                    var is_windows_progress_dialog = class_names.Any(c => c.Item2 == "DirectUIHWND") &&
+                                                                     class_names.Any(c => c.Item2 == "msctls_progress32");
+                                    if (is_windows_progress_dialog) {
+                                        // found a shell copy/move/delete window
 
-                                    // 1.2.5+ trial and error - seems that disabling the window ends up hiding it from screen as well
-                                    // however, I'm still moving it, just a precaution
-                                    //
-                                    // note: I'm disabling the window, so that the user can't press Esc/Enter to cancel the process
-                                    EnableWindow(w, false);
+                                        // 1.2.5+ trial and error - seems that disabling the window ends up hiding it from screen as well
+                                        // however, I'm still moving it, just a precaution
+                                        //
+                                        // note: I'm disabling the window, so that the user can't press Esc/Enter to cancel the process
+                                        EnableWindow(w, false);
 
-                                    // hiding the window doesn't work, minimizing would be useless - so, just move it outside the screen
-                                    MoveWindow(w, -100000, 10, 600, 300, false);
+                                        // hiding the window doesn't work, minimizing would be useless - so, just move it outside the screen
+                                        MoveWindow(w, -100000, 10, 600, 300, false);
+                                    }
                                 }
                             }
-                        }
+                    }
+                } catch {
+                    // just in case... normally, should never happen
                 }
             }
         }
